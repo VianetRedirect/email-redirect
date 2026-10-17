@@ -62,8 +62,9 @@ class DpadView @JvmOverloads constructor(
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         cx = w / 2f
         cy = h / 2f
-        outerR = min(min(w, h) / 2f - 4f * density, 175f * density)
-        innerR = outerR * 0.38f
+        // Matches the span of the three key columns below it rather than filling the screen.
+        outerR = min(min(w, h) / 2f - 2f * density, 100f * density)
+        innerR = outerR * 0.40f
     }
 
     override fun onDraw(canvas: Canvas) {

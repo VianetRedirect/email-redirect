@@ -1,262 +1,282 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:background="@color/page"
     android:fitsSystemWindows="true"
-    android:paddingTop="2dp"
-    android:paddingBottom="10dp">
+    android:fillViewport="true"
+    android:scrollbars="none">
 
-    <!-- Slim header: which Fire TV, is it answering, and the overflow menu -->
+    <!-- Header at the top, the remote centred in whatever height is left; scrolls only on very short screens -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="46dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingLeft="16dp"
-        android:paddingRight="8dp">
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingTop="2dp"
+        android:paddingBottom="10dp">
 
+        <!-- Slim header: which Fire TV, is it answering, and the overflow menu -->
         <LinearLayout
-            android:id="@+id/deviceChip"
-            android:layout_width="0dp"
-            android:layout_height="36dp"
-            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="46dp"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:paddingLeft="12dp"
-            android:paddingRight="12dp"
-            android:background="@drawable/bg_device_chip"
-            android:clickable="true"
-            android:focusable="true">
+            android:paddingLeft="16dp"
+            android:paddingRight="8dp">
 
-            <View
-                android:id="@+id/statusDot"
-                android:layout_width="9dp"
-                android:layout_height="9dp"
-                android:background="@drawable/status_dot" />
-
-            <TextView
-                android:id="@+id/deviceName"
+            <LinearLayout
+                android:id="@+id/deviceChip"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="36dp"
                 android:layout_weight="1"
-                android:layout_marginLeft="9dp"
-                android:text="@string/no_device"
-                android:textColor="@color/text"
-                android:textSize="14sp"
-                android:singleLine="true"
-                android:ellipsize="end" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingLeft="12dp"
+                android:paddingRight="12dp"
+                android:background="@drawable/bg_device_chip"
+                android:clickable="true"
+                android:focusable="true">
+
+                <View
+                    android:id="@+id/statusDot"
+                    android:layout_width="9dp"
+                    android:layout_height="9dp"
+                    android:background="@drawable/status_dot" />
+
+                <TextView
+                    android:id="@+id/deviceName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginLeft="9dp"
+                    android:text="@string/no_device"
+                    android:textColor="@color/text"
+                    android:textSize="14sp"
+                    android:singleLine="true"
+                    android:ellipsize="end" />
+            </LinearLayout>
+
+            <ImageButton
+                android:id="@+id/btnMore"
+                style="@style/IconButton"
+                android:layout_marginLeft="4dp"
+                android:src="@drawable/ic_more"
+                android:contentDescription="@string/btn_more" />
         </LinearLayout>
 
-        <ImageButton
-            android:id="@+id/btnMore"
-            style="@style/IconButton"
-            android:layout_marginLeft="4dp"
-            android:src="@drawable/ic_more"
-            android:contentDescription="@string/btn_more" />
-    </LinearLayout>
-
-    <!-- The remote body: a tall black pill, like the Alexa Voice Remote -->
-    <LinearLayout
-        android:id="@+id/remoteBody"
-        android:layout_width="272dp"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="4dp"
-        android:orientation="vertical"
-        android:background="@drawable/remote_body"
-        android:paddingLeft="22dp"
-        android:paddingRight="22dp"
-        android:paddingTop="22dp"
-        android:paddingBottom="16dp">
-
-        <!-- Power (left) and the blue Alexa button (centre) -->
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="46dp">
-
-            <ImageButton
-                android:id="@+id/btnPower"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_gravity="left|center_vertical"
-                android:layout_marginLeft="6dp"
-                android:background="@drawable/btn_key"
-                android:src="@drawable/ic_power"
-                android:padding="10dp"
-                android:scaleType="fitCenter"
-                android:tint="@color/remote_icon"
-                android:soundEffectsEnabled="false"
-                android:contentDescription="@string/btn_power" />
-
-            <ImageButton
-                android:id="@+id/btnMic"
-                android:layout_width="78dp"
-                android:layout_height="42dp"
-                android:layout_gravity="center"
-                android:background="@drawable/btn_alexa"
-                android:src="@drawable/ic_mic"
-                android:padding="9dp"
-                android:scaleType="fitCenter"
-                android:tint="#FFFFFF"
-                android:soundEffectsEnabled="false"
-                android:contentDescription="@string/btn_alexa" />
-        </FrameLayout>
-
-        <!-- Navigation ring with Select in the middle; takes whatever height is left -->
-        <com.vianetredirect.firetvremote.DpadView
-            android:id="@+id/dpad"
+        <Space
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"
-            android:layout_marginTop="6dp"
-            android:layout_marginBottom="2dp" />
+            android:layout_weight="1" />
 
-        <!-- Back / Home / Menu -->
-        <LinearLayout style="@style/KeyRow">
-            <FrameLayout style="@style/KeyCell">
-                <ImageButton
-                    android:id="@+id/btnBack"
-                    style="@style/Key"
-                    android:src="@drawable/ic_undo"
-                    android:contentDescription="@string/btn_back" />
-            </FrameLayout>
-            <FrameLayout style="@style/KeyCell">
-                <ImageButton
-                    android:id="@+id/btnHome"
-                    style="@style/Key"
-                    android:src="@drawable/ic_home"
-                    android:contentDescription="@string/btn_home" />
-            </FrameLayout>
-            <FrameLayout style="@style/KeyCell">
-                <ImageButton
-                    android:id="@+id/btnMenu"
-                    style="@style/Key"
-                    android:src="@drawable/ic_menu"
-                    android:contentDescription="@string/btn_menu" />
-            </FrameLayout>
-        </LinearLayout>
-
-        <!-- Rewind / Play-Pause / Fast forward -->
-        <LinearLayout style="@style/KeyRow">
-            <FrameLayout style="@style/KeyCell">
-                <ImageButton
-                    android:id="@+id/btnRewind"
-                    style="@style/Key"
-                    android:src="@drawable/ic_rewind"
-                    android:contentDescription="@string/btn_rewind" />
-            </FrameLayout>
-            <FrameLayout style="@style/KeyCell">
-                <ImageButton
-                    android:id="@+id/btnPlayPause"
-                    style="@style/Key"
-                    android:src="@drawable/ic_play_pause"
-                    android:contentDescription="@string/btn_play_pause" />
-            </FrameLayout>
-            <FrameLayout style="@style/KeyCell">
-                <ImageButton
-                    android:id="@+id/btnForward"
-                    style="@style/Key"
-                    android:src="@drawable/ic_forward"
-                    android:contentDescription="@string/btn_forward" />
-            </FrameLayout>
-        </LinearLayout>
-
-        <!-- Mute | volume rocker | Guide -->
+        <!-- The remote body: a tall black pill, like the Alexa Voice Remote -->
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="108dp"
-            android:layout_marginTop="8dp"
-            android:orientation="horizontal">
+            android:id="@+id/remoteBody"
+            android:layout_width="272dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="4dp"
+            android:orientation="vertical"
+            android:background="@drawable/remote_body"
+            android:paddingLeft="22dp"
+            android:paddingRight="22dp"
+            android:paddingTop="24dp"
+            android:paddingBottom="18dp">
 
-            <FrameLayout style="@style/KeyCell">
+            <!-- Power (left, tucked inside the curve) and the blue Alexa button (centre) -->
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="44dp">
+
                 <ImageButton
-                    android:id="@+id/btnMute"
-                    style="@style/Key"
-                    android:src="@drawable/ic_mute"
-                    android:contentDescription="@string/btn_mute" />
-            </FrameLayout>
+                    android:id="@+id/btnPower"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_gravity="left|center_vertical"
+                    android:layout_marginLeft="14dp"
+                    android:background="@drawable/btn_key"
+                    android:src="@drawable/ic_power"
+                    android:padding="9dp"
+                    android:scaleType="fitCenter"
+                    android:tint="@color/remote_icon"
+                    android:soundEffectsEnabled="false"
+                    android:contentDescription="@string/btn_power" />
 
-            <FrameLayout style="@style/KeyCell">
-                <LinearLayout
-                    android:layout_width="50dp"
-                    android:layout_height="108dp"
+                <ImageButton
+                    android:id="@+id/btnMic"
+                    android:layout_width="76dp"
+                    android:layout_height="40dp"
                     android:layout_gravity="center"
-                    android:orientation="vertical">
-
-                    <ImageButton
-                        android:id="@+id/btnVolUp"
-                        style="@style/RockerKey"
-                        android:background="@drawable/btn_rocker_top"
-                        android:src="@drawable/ic_plus"
-                        android:contentDescription="@string/btn_vol_up" />
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="@color/remote_body" />
-
-                    <ImageButton
-                        android:id="@+id/btnVolDown"
-                        style="@style/RockerKey"
-                        android:background="@drawable/btn_rocker_bottom"
-                        android:src="@drawable/ic_minus"
-                        android:contentDescription="@string/btn_vol_down" />
-                </LinearLayout>
+                    android:background="@drawable/btn_alexa"
+                    android:src="@drawable/ic_mic"
+                    android:padding="9dp"
+                    android:scaleType="fitCenter"
+                    android:tint="#FFFFFF"
+                    android:soundEffectsEnabled="false"
+                    android:contentDescription="@string/btn_alexa" />
             </FrameLayout>
 
-            <FrameLayout style="@style/KeyCell">
-                <ImageButton
-                    android:id="@+id/btnGuide"
-                    style="@style/Key"
-                    android:src="@drawable/ic_live_tv"
-                    android:contentDescription="@string/btn_guide" />
-            </FrameLayout>
+            <!-- Navigation ring with Select in the middle, the same span as the key rows below -->
+            <com.vianetredirect.firetvremote.DpadView
+                android:id="@+id/dpad"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_marginTop="14dp"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Back / Home / Menu -->
+            <LinearLayout style="@style/KeyRow">
+                <FrameLayout style="@style/KeyCell">
+                    <ImageButton
+                        android:id="@+id/btnBack"
+                        style="@style/Key"
+                        android:src="@drawable/ic_undo"
+                        android:contentDescription="@string/btn_back" />
+                </FrameLayout>
+                <FrameLayout style="@style/KeyCell">
+                    <ImageButton
+                        android:id="@+id/btnHome"
+                        style="@style/Key"
+                        android:src="@drawable/ic_home"
+                        android:contentDescription="@string/btn_home" />
+                </FrameLayout>
+                <FrameLayout style="@style/KeyCell">
+                    <ImageButton
+                        android:id="@+id/btnMenu"
+                        style="@style/Key"
+                        android:src="@drawable/ic_menu"
+                        android:contentDescription="@string/btn_menu" />
+                </FrameLayout>
+            </LinearLayout>
+
+            <!-- Rewind / Play-Pause / Fast forward -->
+            <LinearLayout style="@style/KeyRow">
+                <FrameLayout style="@style/KeyCell">
+                    <ImageButton
+                        android:id="@+id/btnRewind"
+                        style="@style/Key"
+                        android:src="@drawable/ic_rewind"
+                        android:contentDescription="@string/btn_rewind" />
+                </FrameLayout>
+                <FrameLayout style="@style/KeyCell">
+                    <ImageButton
+                        android:id="@+id/btnPlayPause"
+                        style="@style/Key"
+                        android:src="@drawable/ic_play_pause"
+                        android:contentDescription="@string/btn_play_pause" />
+                </FrameLayout>
+                <FrameLayout style="@style/KeyCell">
+                    <ImageButton
+                        android:id="@+id/btnForward"
+                        style="@style/Key"
+                        android:src="@drawable/ic_forward"
+                        android:contentDescription="@string/btn_forward" />
+                </FrameLayout>
+            </LinearLayout>
+
+            <!-- Mute | volume rocker | Guide -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="104dp"
+                android:layout_marginTop="10dp"
+                android:orientation="horizontal">
+
+                <FrameLayout style="@style/KeyCell">
+                    <ImageButton
+                        android:id="@+id/btnMute"
+                        style="@style/Key"
+                        android:src="@drawable/ic_mute"
+                        android:contentDescription="@string/btn_mute" />
+                </FrameLayout>
+
+                <FrameLayout style="@style/KeyCell">
+                    <LinearLayout
+                        android:layout_width="48dp"
+                        android:layout_height="104dp"
+                        android:layout_gravity="center"
+                        android:orientation="vertical">
+
+                        <ImageButton
+                            android:id="@+id/btnVolUp"
+                            style="@style/RockerKey"
+                            android:background="@drawable/btn_rocker_top"
+                            android:src="@drawable/ic_plus"
+                            android:contentDescription="@string/btn_vol_up" />
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="@color/remote_body" />
+
+                        <ImageButton
+                            android:id="@+id/btnVolDown"
+                            style="@style/RockerKey"
+                            android:background="@drawable/btn_rocker_bottom"
+                            android:src="@drawable/ic_minus"
+                            android:contentDescription="@string/btn_vol_down" />
+                    </LinearLayout>
+                </FrameLayout>
+
+                <FrameLayout style="@style/KeyCell">
+                    <ImageButton
+                        android:id="@+id/btnGuide"
+                        style="@style/Key"
+                        android:src="@drawable/ic_live_tv"
+                        android:contentDescription="@string/btn_guide" />
+                </FrameLayout>
+            </LinearLayout>
+
+            <!-- Four app buttons, two rows of two, inset so they clear the rounded end -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/btnApp1"
+                    style="@style/AppKey" />
+
+                <TextView
+                    android:id="@+id/btnApp2"
+                    style="@style/AppKey"
+                    android:layout_marginLeft="10dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/btnApp3"
+                    style="@style/AppKey" />
+
+                <TextView
+                    android:id="@+id/btnApp4"
+                    style="@style/AppKey"
+                    android:layout_marginLeft="10dp" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:gravity="center"
+                android:text="@string/fire_tv"
+                android:textColor="@color/remote_icon_dim"
+                android:textSize="11sp"
+                android:letterSpacing="0.1" />
         </LinearLayout>
 
-        <!-- Four app buttons, two rows of two, like the printed ones on the remote -->
-        <LinearLayout
+        <Space
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/btnApp1"
-                style="@style/AppKey" />
-
-            <TextView
-                android:id="@+id/btnApp2"
-                style="@style/AppKey"
-                android:layout_marginLeft="10dp" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/btnApp3"
-                style="@style/AppKey" />
-
-            <TextView
-                android:id="@+id/btnApp4"
-                style="@style/AppKey"
-                android:layout_marginLeft="10dp" />
-        </LinearLayout>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:gravity="center"
-            android:text="@string/fire_tv"
-            android:textColor="@color/remote_icon_dim"
-            android:textSize="12sp"
-            android:letterSpacing="0.08" />
+            android:layout_height="0dp"
+            android:layout_weight="1" />
     </LinearLayout>
-</LinearLayout>
+</ScrollView>
