@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Fire Remote</string>
+    <string name="no_device">Tap to connect a Fire TV</string>
+    <string name="status_connected">Connected</string>
+    <string name="status_offline">Not reachable</string>
+
+    <string name="btn_back">Back</string>
+    <string name="btn_home">Home</string>
+    <string name="btn_menu">Menu</string>
+    <string name="btn_rewind">Rewind</string>
+    <string name="btn_play_pause">Play or pause</string>
+    <string name="btn_forward">Fast forward</string>
+    <string name="btn_keyboard">Keyboard</string>
+    <string name="btn_apps">Apps</string>
+    <string name="btn_more">More</string>
+    <string name="btn_rescan">Search again</string>
+
+    <string name="setup_title">Connect your Fire TV</string>
+    <string name="setup_subtitle">Your phone and the Fire TV need to be on the same Wi‑Fi network.</string>
+    <string name="setup_found">Found on your network</string>
+    <string name="setup_searching">Searching for Fire TV devices…</string>
+    <string name="setup_none_found">No Fire TV found yet. Make sure it is switched on, then search again or type its IP address below.</string>
+    <string name="setup_manual">Or type its IP address</string>
+    <string name="setup_ip_hint">e.g. 192.168.1.50</string>
+    <string name="setup_connect">Connect</string>
+    <string name="setup_ip_help">On the Fire TV the address is under Settings › My Fire TV › About › Network.</string>
+    <string name="setup_contacting">Asking the Fire TV to show a PIN…</string>
+    <string name="setup_pin_title">Enter the PIN shown on your TV</string>
+    <string name="setup_pin_hint">PIN</string>
+    <string name="setup_pairing">Pairing…</string>
+    <string name="setup_paired">Paired with %1$s</string>
+    <string name="setup_wrong_pin">That PIN was not accepted. Try again.</string>
+    <string name="setup_unreachable">Could not reach the Fire TV at %1$s. Check it is on and awake, and that both devices are on the same Wi‑Fi.</string>
+    <string name="setup_invalid_ip">That does not look like an IP address.</string>
+
+    <string name="keyboard_title">Type on the Fire TV</string>
+    <string name="keyboard_hint">Text to send</string>
+    <string name="keyboard_send">Send</string>
+    <string name="keyboard_sent">Sent</string>
+
+    <string name="apps_title">Apps on your Fire TV</string>
+    <string name="apps_filter_hint">Search apps</string>
+    <string name="apps_loading">Loading apps…</string>
+    <string name="apps_fallback">Could not read the app list from the Fire TV, so here are the usual ones.</string>
+    <string name="apps_launching">Opening %1$s…</string>
+    <string name="apps_launch_failed">The Fire TV could not open that app.</string>
+
+    <string name="menu_wake">Wake up Fire TV</string>
+    <string name="menu_sleep">Put Fire TV to sleep</string>
+    <string name="menu_switch">Switch Fire TV</string>
+    <string name="menu_add">Add another Fire TV</string>
+    <string name="menu_repair">Pair again</string>
+    <string name="menu_forget">Forget this Fire TV</string>
+
+    <string name="err_unreachable">Can\'t reach the Fire TV</string>
+    <string name="err_unauthorized">The Fire TV no longer accepts this phone. Pair again.</string>
+    <string name="err_not_supported">The Fire TV did not accept that command.</string>
+    <string name="wake_sent">Wake-up sent</string>
+
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+</resources>

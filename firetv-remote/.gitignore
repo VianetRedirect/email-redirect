@@ -1,0 +1,15 @@
+# Gradle / Android Studio
+.gradle/
+build/
+app/build/
+local.properties
+.idea/
+*.iml
+.kotlin/
+
+# SDK-free local build output
+build-local/
+
+# never commit signing keys
+*.jks
+*.keystore

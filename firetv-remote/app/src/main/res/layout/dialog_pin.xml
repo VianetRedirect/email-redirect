@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingLeft="24dp"
+    android:paddingRight="24dp"
+    android:paddingTop="8dp">
+
+    <EditText
+        android:id="@+id/pinInput"
+        style="@style/EditBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/setup_pin_hint"
+        android:inputType="number"
+        android:maxLength="8"
+        android:gravity="center"
+        android:textSize="30sp"
+        android:letterSpacing="0.3"
+        android:imeOptions="actionDone"
+        android:singleLine="true" />
+</LinearLayout>

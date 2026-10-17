@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bg">#0E1014</color>
+    <color name="surface">#1C2027</color>
+    <color name="surface_pressed">#323945</color>
+    <color name="surface_center">#272D37</color>
+    <color name="accent">#FF9900</color>
+    <color name="text">#F3F4F6</color>
+    <color name="text_dim">#8B93A1</color>
+    <color name="ripple">#55FFFFFF</color>
+    <color name="online">#3DDC84</color>
+    <color name="offline">#FF5252</color>
+    <color name="unknown">#5A6270</color>
+    <color name="icon_bg">#FF9900</color>
+</resources>
