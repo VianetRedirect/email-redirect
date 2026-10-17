@@ -1,6 +1,7 @@
 package com.vianetredirect.firetvremote
 
 import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -27,6 +28,9 @@ class AppsActivity : Activity() {
     class AppEntry(val id: String, val name: String)
 
     companion object {
+        const val EXTRA_PICK = "pick"
+        const val EXTRA_APP_ID = "app_id"
+        const val EXTRA_APP_NAME = "app_name"
         private val ID_KEYS = arrayOf("appId", "packageName", "package", "pkg", "id")
         private val NAME_KEYS = arrayOf("name", "displayName", "title", "appName", "label")
 
@@ -52,6 +56,7 @@ class AppsActivity : Activity() {
     private val executor = Executors.newSingleThreadExecutor()
     private val main = Handler(Looper.getMainLooper())
     private var client: FireTvClient? = null
+    private var pickMode = false
 
     private lateinit var statusText: TextView
     private lateinit var progress: ProgressBar
@@ -66,13 +71,15 @@ class AppsActivity : Activity() {
             return
         }
         client = FireTvClient(device.host, device.token)
+        pickMode = intent.getBooleanExtra(EXTRA_PICK, false)
+        if (pickMode) findViewById<TextView>(R.id.appsTitle).setText(R.string.pick_title)
 
         statusText = findViewById(R.id.statusText)
         progress = findViewById(R.id.progress)
         filter = findViewById(R.id.filter)
         val list = findViewById<ListView>(R.id.appList)
         list.adapter = adapter
-        list.setOnItemClickListener { _, _, position, _ -> launch(shown[position]) }
+        list.setOnItemClickListener { _, _, position, _ -> choose(shown[position]) }
         findViewById<ImageButton>(R.id.btnClose).setOnClickListener { finish() }
         filter.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -121,6 +128,15 @@ class AppsActivity : Activity() {
             if (q.isEmpty() || a.name.lowercase().contains(q) || a.id.lowercase().contains(q)) shown.add(a)
         }
         adapter.notifyDataSetChanged()
+    }
+
+    private fun choose(app: AppEntry) {
+        if (pickMode) {
+            setResult(RESULT_OK, Intent().putExtra(EXTRA_APP_ID, app.id).putExtra(EXTRA_APP_NAME, app.name))
+            finish()
+        } else {
+            launch(app)
+        }
     }
 
     private fun launch(app: AppEntry) {

@@ -6,7 +6,6 @@ import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
 import android.util.AttributeSet
-import android.util.TypedValue
 import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.View
@@ -33,16 +32,11 @@ class DpadView @JvmOverloads constructor(
     var listener: Listener? = null
 
     private val density = resources.displayMetrics.density
-    private val ringPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = context.getColor(R.color.surface) }
-    private val pressedPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = context.getColor(R.color.surface_pressed) }
-    private val centerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = context.getColor(R.color.surface_center) }
-    private val gapPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = context.getColor(R.color.bg) }
-    private val arrowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = context.getColor(R.color.text); style = Paint.Style.FILL }
-    private val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = context.getColor(R.color.text_dim)
-        textSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 14f, resources.displayMetrics)
-        textAlign = Paint.Align.CENTER
-    }
+    private val ringPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = context.getColor(R.color.remote_ring) }
+    private val pressedPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = context.getColor(R.color.remote_key_pressed) }
+    private val centerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = context.getColor(R.color.remote_ring_center) }
+    private val gapPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = context.getColor(R.color.remote_body) }
+    private val arrowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = context.getColor(R.color.remote_icon_dim); style = Paint.Style.FILL }
     private val oval = RectF()
     private val arrow = Path()
 
@@ -93,12 +87,10 @@ class DpadView @JvmOverloads constructor(
         drawArrow(canvas, cx + d, cy, 90f)
         drawArrow(canvas, cx, cy + d, 180f)
         drawArrow(canvas, cx - d, cy, 270f)
-
-        canvas.drawText("OK", cx, cy + labelPaint.textSize / 3f, labelPaint)
     }
 
     private fun drawArrow(canvas: Canvas, x: Float, y: Float, rotation: Float) {
-        val s = 7f * density
+        val s = 6f * density
         arrow.reset()
         arrow.moveTo(0f, -s)
         arrow.lineTo(s * 1.15f, s * 0.7f)

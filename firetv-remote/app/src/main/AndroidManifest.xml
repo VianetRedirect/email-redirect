@@ -18,6 +18,7 @@
             android:name=".MainActivity"
             android:exported="true"
             android:launchMode="singleTop"
+            android:theme="@style/RemoteTheme"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -36,5 +37,12 @@
             android:exported="false"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize" />
+
+        <!-- Serves this app's own APK to the share sheet ("Share this app"). -->
+        <provider
+            android:name=".ApkProvider"
+            android:authorities="com.vianetredirect.firetvremote.apk"
+            android:exported="false"
+            android:grantUriPermissions="true" />
     </application>
 </manifest>

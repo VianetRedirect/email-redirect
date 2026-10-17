@@ -60,4 +60,21 @@
 
     <string name="cancel">Cancel</string>
     <string name="ok">OK</string>
+
+    <string name="btn_power">Power: tap to wake, hold to sleep</string>
+    <string name="btn_alexa">Type a search</string>
+    <string name="btn_mute">Mute</string>
+    <string name="btn_vol_up">Volume up</string>
+    <string name="btn_vol_down">Volume down</string>
+    <string name="btn_guide">Apps</string>
+    <string name="fire_tv">fire tv</string>
+    <string name="sleep_sent">Sleep sent</string>
+    <string name="err_no_volume">Volume isn\'t available over Wi‑Fi on this Fire TV</string>
+    <string name="shortcut_changed">Button set to %1$s</string>
+    <string name="pick_title">Choose an app for this button</string>
+
+    <string name="menu_share">Share this app</string>
+    <string name="menu_link">Copy download link</string>
+    <string name="link_copied">Download link copied</string>
+    <string name="share_text">Fire Remote, a small ad-free remote for Fire TV. Install the attached FireRemote.apk, or download the latest version here: %1$s</string>
 </resources>

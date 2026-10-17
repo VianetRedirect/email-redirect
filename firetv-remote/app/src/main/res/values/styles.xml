@@ -14,6 +14,13 @@
         <item name="android:popupMenuStyle">@style/AppPopup</item>
     </style>
 
+    <!-- The remote screen sits on a near-black page so the body reads as a physical object. -->
+    <style name="RemoteTheme" parent="AppTheme">
+        <item name="android:windowBackground">@color/page</item>
+        <item name="android:statusBarColor">@color/page</item>
+        <item name="android:navigationBarColor">@color/page</item>
+    </style>
+
     <style name="AppDialog" parent="android:Theme.Material.Dialog.Alert">
         <item name="android:colorAccent">@color/accent</item>
         <item name="android:colorBackground">@color/surface</item>
@@ -24,15 +31,60 @@
         <item name="android:popupBackground">@color/surface</item>
     </style>
 
-    <style name="RoundButton">
-        <item name="android:layout_width">66dp</item>
-        <item name="android:layout_height">66dp</item>
-        <item name="android:background">@drawable/btn_round</item>
-        <item name="android:padding">19dp</item>
-        <item name="android:scaleType">fitCenter</item>
-        <item name="android:tint">@color/text</item>
+    <!-- Remote keys -->
+    <style name="KeyRow">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">52dp</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:orientation">horizontal</item>
     </style>
 
+    <style name="KeyCell">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_weight">1</item>
+    </style>
+
+    <style name="Key">
+        <item name="android:layout_width">52dp</item>
+        <item name="android:layout_height">52dp</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:background">@drawable/btn_key</item>
+        <item name="android:padding">14dp</item>
+        <item name="android:scaleType">fitCenter</item>
+        <item name="android:tint">@color/remote_icon</item>
+        <item name="android:soundEffectsEnabled">false</item>
+    </style>
+
+    <style name="RockerKey">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">0dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:padding">14dp</item>
+        <item name="android:scaleType">fitCenter</item>
+        <item name="android:tint">@color/remote_icon</item>
+        <item name="android:soundEffectsEnabled">false</item>
+    </style>
+
+    <style name="AppKey">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">30dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:background">@drawable/btn_app</item>
+        <item name="android:gravity">center</item>
+        <item name="android:paddingLeft">8dp</item>
+        <item name="android:paddingRight">8dp</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/remote_icon</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:soundEffectsEnabled">false</item>
+    </style>
+
+    <!-- Setup / apps screens -->
     <style name="PillButton" parent="android:Widget.Material.Button.Borderless">
         <item name="android:layout_height">54dp</item>
         <item name="android:background">@drawable/btn_pill</item>

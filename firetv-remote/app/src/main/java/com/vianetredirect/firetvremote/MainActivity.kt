@@ -2,8 +2,12 @@ package com.vianetredirect.firetvremote
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -12,7 +16,6 @@ import android.view.HapticFeedbackConstants
 import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
-import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.PopupMenu
@@ -22,6 +25,18 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 class MainActivity : Activity(), DpadView.Listener {
+
+    companion object {
+        /** Always points at the newest APK published by the GitHub Actions workflow. */
+        const val DOWNLOAD_URL = "https://github.com/VianetRedirect/email-redirect/releases/latest/download/FireRemote.apk"
+        private const val REQUEST_PICK_APP = 100
+        private const val MENU_SHARE = 1
+        private const val MENU_LINK = 2
+        private const val MENU_ADD = 3
+        private const val MENU_REPAIR = 4
+        private const val MENU_FORGET = 5
+        private val APP_BUTTONS = intArrayOf(R.id.btnApp1, R.id.btnApp2, R.id.btnApp3, R.id.btnApp4)
+    }
 
     private lateinit var store: DeviceStore
     private var device: Device? = null
@@ -49,23 +64,36 @@ class MainActivity : Activity(), DpadView.Listener {
         dpad = findViewById(R.id.dpad)
         dpad.listener = this
 
+        // Top row: power, and the blue Alexa button (which types instead of listens)
+        val power = findViewById<ImageButton>(R.id.btnPower)
+        power.setOnClickListener { haptic(it); wake() }
+        power.setOnLongClickListener { haptic(it); sleep(); true }
+        findViewById<ImageButton>(R.id.btnMic).setOnClickListener { haptic(it); showKeyboardDialog() }
+
         bindKey(R.id.btnBack, "back")
         bindKey(R.id.btnHome, "home")
         bindKey(R.id.btnMenu, "menu")
         bindScan(R.id.btnRewind, false)
         bindScan(R.id.btnForward, true)
+        findViewById<ImageButton>(R.id.btnPlayPause).setOnClickListener { haptic(it); send { c -> c.playPause() } }
 
-        val playPause = findViewById<ImageButton>(R.id.btnPlayPause)
-        playPause.isSoundEffectsEnabled = false
-        playPause.setOnClickListener {
-            it.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-            send { c -> c.playPause() }
-        }
-
-        findViewById<Button>(R.id.btnKeyboard).setOnClickListener { showKeyboardDialog() }
-        findViewById<Button>(R.id.btnApps).setOnClickListener {
+        // Mute | volume rocker | Guide
+        findViewById<ImageButton>(R.id.btnMute).setOnClickListener { haptic(it); sendVolume("mute", "keyDownUp") }
+        bindVolume(R.id.btnVolUp, "volume_up")
+        bindVolume(R.id.btnVolDown, "volume_down")
+        findViewById<ImageButton>(R.id.btnGuide).setOnClickListener {
+            haptic(it)
             if (ensureDevice()) startActivity(Intent(this, AppsActivity::class.java))
         }
+
+        // Four app buttons: tap opens the app, long-press picks a different one
+        for (slot in APP_BUTTONS.indices) {
+            val b = findViewById<TextView>(APP_BUTTONS[slot])
+            b.setOnClickListener { haptic(it); launchShortcut(slot) }
+            b.setOnLongClickListener { haptic(it); pickShortcut(slot); true }
+        }
+        refreshShortcuts()
+
         findViewById<View>(R.id.deviceChip).setOnClickListener { showDeviceMenu(it) }
         findViewById<ImageButton>(R.id.btnMore).setOnClickListener { showMoreMenu(it) }
     }
@@ -87,6 +115,10 @@ class MainActivity : Activity(), DpadView.Listener {
         super.onDestroy()
         unauthorizedDialog?.dismiss()
         executor.shutdown()
+    }
+
+    private fun haptic(v: View) {
+        v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
     }
 
     // ---- Device state ---------------------------------------------------------------------
@@ -186,15 +218,55 @@ class MainActivity : Activity(), DpadView.Listener {
     }
 
     private fun bindKey(id: Int, action: String) {
-        val b = findViewById<ImageButton>(id)
-        b.isSoundEffectsEnabled = false
-        b.setOnTouchListener(HoldTouchListener { type -> send { c -> c.key(action, type) } })
+        findViewById<ImageButton>(id).setOnTouchListener(HoldTouchListener { type -> send { c -> c.key(action, type) } })
     }
 
     private fun bindScan(id: Int, forward: Boolean) {
-        val b = findViewById<ImageButton>(id)
-        b.isSoundEffectsEnabled = false
-        b.setOnTouchListener(HoldTouchListener { type -> send { c -> c.scan(forward, type) } })
+        findViewById<ImageButton>(id).setOnTouchListener(HoldTouchListener { type -> send { c -> c.scan(forward, type) } })
+    }
+
+    private fun bindVolume(id: Int, action: String) {
+        findViewById<ImageButton>(id).setOnTouchListener(HoldTouchListener { type -> sendVolume(action, type) })
+    }
+
+    /** Volume over the network only works on some Fire TV models, so a refusal gets its own message. */
+    private fun sendVolume(action: String, type: String) {
+        val c = client
+        if (c == null) {
+            ensureDevice()
+            return
+        }
+        executor.execute {
+            val ok = try {
+                c.key(action, type).ok
+            } catch (e: Exception) {
+                false
+            }
+            if (!ok && type != "keyUp") main.post { toastThrottled(getString(R.string.err_no_volume)) }
+        }
+    }
+
+    private fun wake() {
+        val c = client
+        if (c == null) {
+            ensureDevice()
+            return
+        }
+        executor.execute {
+            try {
+                c.wake()
+                main.post { Toast.makeText(this, R.string.wake_sent, Toast.LENGTH_SHORT).show() }
+            } catch (e: Exception) {
+                main.post { toastThrottled(getString(R.string.err_unreachable)) }
+            }
+            main.postDelayed({ checkConnection() }, 2500)
+        }
+    }
+
+    private fun sleep() {
+        if (!ensureDevice()) return
+        Toast.makeText(this, R.string.sleep_sent, Toast.LENGTH_SHORT).show()
+        send { c -> c.key("sleep") }
     }
 
     private fun toastThrottled(message: String) {
@@ -214,6 +286,52 @@ class MainActivity : Activity(), DpadView.Listener {
             }
             .setNegativeButton(R.string.cancel, null)
             .show()
+    }
+
+    // ---- App shortcut buttons -------------------------------------------------------------
+
+    private fun refreshShortcuts() {
+        for (slot in APP_BUTTONS.indices) {
+            val b = findViewById<TextView>(APP_BUTTONS[slot])
+            val (label, color) = Shortcuts.label(this, Shortcuts.get(this, slot))
+            b.text = label
+            b.setTextColor(color)
+        }
+    }
+
+    private fun launchShortcut(slot: Int) {
+        val c = client
+        if (c == null) {
+            ensureDevice()
+            return
+        }
+        val s = Shortcuts.get(this, slot)
+        Toast.makeText(this, getString(R.string.apps_launching, s.name), Toast.LENGTH_SHORT).show()
+        executor.execute {
+            val ok = try {
+                c.launchApp(s.id).accepted
+            } catch (e: Exception) {
+                false
+            }
+            if (!ok) main.post { toastThrottled(getString(R.string.apps_launch_failed)) }
+        }
+    }
+
+    private fun pickShortcut(slot: Int) {
+        if (!ensureDevice()) return
+        val pick = Intent(this, AppsActivity::class.java).putExtra(AppsActivity.EXTRA_PICK, true)
+        startActivityForResult(pick, REQUEST_PICK_APP + slot)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        val slot = requestCode - REQUEST_PICK_APP
+        if (slot !in APP_BUTTONS.indices || resultCode != RESULT_OK || data == null) return
+        val id = data.getStringExtra(AppsActivity.EXTRA_APP_ID) ?: return
+        val name = data.getStringExtra(AppsActivity.EXTRA_APP_NAME) ?: id
+        Shortcuts.set(this, slot, Shortcut(id, name))
+        refreshShortcuts()
+        Toast.makeText(this, getString(R.string.shortcut_changed, name), Toast.LENGTH_SHORT).show()
     }
 
     // ---- Keyboard -------------------------------------------------------------------------
@@ -247,6 +365,26 @@ class MainActivity : Activity(), DpadView.Listener {
         send { c -> c.sendText(text) }
     }
 
+    // ---- Sharing the app ------------------------------------------------------------------
+
+    private fun shareApp() {
+        val uri = Uri.parse("content://" + ApkProvider.AUTHORITY + "/" + ApkProvider.FILE_NAME)
+        val send = Intent(Intent.ACTION_SEND)
+            .setType("application/vnd.android.package-archive")
+            .putExtra(Intent.EXTRA_STREAM, uri)
+            .putExtra(Intent.EXTRA_SUBJECT, getString(R.string.app_name))
+            .putExtra(Intent.EXTRA_TEXT, getString(R.string.share_text, DOWNLOAD_URL))
+            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        send.clipData = ClipData.newRawUri(ApkProvider.FILE_NAME, uri)
+        startActivity(Intent.createChooser(send, getString(R.string.menu_share)))
+    }
+
+    private fun copyLink() {
+        val cm = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        cm.setPrimaryClip(ClipData.newPlainText(getString(R.string.app_name), DOWNLOAD_URL))
+        Toast.makeText(this, R.string.link_copied, Toast.LENGTH_SHORT).show()
+    }
+
     // ---- Menus ----------------------------------------------------------------------------
 
     private fun showDeviceMenu(anchor: View) {
@@ -277,41 +415,24 @@ class MainActivity : Activity(), DpadView.Listener {
 
     private fun showMoreMenu(anchor: View) {
         val menu = PopupMenu(this, anchor)
-        menu.menu.add(0, 1, 0, R.string.menu_wake)
-        menu.menu.add(0, 2, 1, R.string.menu_sleep)
-        menu.menu.add(0, 3, 2, R.string.menu_add)
-        menu.menu.add(0, 4, 3, R.string.menu_repair)
-        menu.menu.add(0, 5, 4, R.string.menu_forget)
+        menu.menu.add(0, MENU_SHARE, 0, R.string.menu_share)
+        menu.menu.add(0, MENU_LINK, 1, R.string.menu_link)
+        menu.menu.add(0, MENU_ADD, 2, R.string.menu_add)
+        menu.menu.add(0, MENU_REPAIR, 3, R.string.menu_repair)
+        menu.menu.add(0, MENU_FORGET, 4, R.string.menu_forget)
         menu.setOnMenuItemClickListener { item ->
             when (item.itemId) {
-                1 -> wake()
-                2 -> send { c -> c.key("sleep") }
-                3 -> startActivity(Intent(this, SetupActivity::class.java))
-                4 -> device?.let { d ->
+                MENU_SHARE -> shareApp()
+                MENU_LINK -> copyLink()
+                MENU_ADD -> startActivity(Intent(this, SetupActivity::class.java))
+                MENU_REPAIR -> device?.let { d ->
                     startActivity(Intent(this, SetupActivity::class.java).putExtra(SetupActivity.EXTRA_HOST, d.host))
                 }
-                5 -> forgetDevice()
+                MENU_FORGET -> forgetDevice()
             }
             true
         }
         menu.show()
-    }
-
-    private fun wake() {
-        val c = client
-        if (c == null) {
-            ensureDevice()
-            return
-        }
-        executor.execute {
-            try {
-                c.wake()
-                main.post { Toast.makeText(this, R.string.wake_sent, Toast.LENGTH_SHORT).show() }
-            } catch (e: Exception) {
-                main.post { toastThrottled(getString(R.string.err_unreachable)) }
-            }
-            main.postDelayed({ checkConnection() }, 2500)
-        }
     }
 
     private fun forgetDevice() {

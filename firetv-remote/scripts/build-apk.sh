@@ -22,11 +22,13 @@ APKSIGNER="${APKSIGNER:-apksigner}"
 KEYSTORE="${KEYSTORE:-$OUT/local-signing.jks}"
 KEYSTORE_PASS="${KEYSTORE_PASS:-fireremote}"
 KEY_ALIAS="${KEY_ALIAS:-fireremote}"
+# dx can only translate the Kotlin stdlib's invokedynamic sites for Android 8+, so this script
+# produces an Android 8.0+ APK. The Gradle/CI build (R8) goes down to Android 7.0.
 MIN_SDK=26
 TARGET_SDK=34
 PACKAGE=com.vianetredirect.firetvremote
-VERSION_CODE="${VERSION_CODE:-1}"
-VERSION_NAME="${VERSION_NAME:-1.0}"
+VERSION_CODE="${VERSION_CODE:-2}"
+VERSION_NAME="${VERSION_NAME:-1.1}"
 
 mkdir -p "$OUT"
 ANDROID_JAR="${ANDROID_JAR:-$OUT/android-34.jar}"
