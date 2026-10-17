@@ -9,7 +9,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
-import com.vianet.workoutlog.ui.WorkoutLogApp
+import com.vianet.workoutlog.ui.AppRoot
 import com.vianet.workoutlog.ui.theme.WorkoutLogTheme
 
 class MainActivity : ComponentActivity() {
@@ -22,7 +22,7 @@ class MainActivity : ComponentActivity() {
         askForNotificationPermission()
         setContent {
             WorkoutLogTheme {
-                WorkoutLogApp()
+                AppRoot()
             }
         }
     }
