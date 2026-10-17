@@ -121,10 +121,17 @@ class FireTvClient(val host: String, @Volatile var token: String?) {
      * keyActionType is keyDownUp for a tap, or keyDown / keyUp for press-and-hold.
      */
     @Throws(IOException::class)
-    fun key(action: String, keyActionType: String = "keyDownUp"): Response = request(
-        "POST", "/v1/FireTV?action=$action",
-        JSONObject().put("keyActionType", keyActionType).toString()
-    )
+    fun key(action: String, keyActionType: String = "keyDownUp"): Response {
+        val r = request(
+            "POST", "/v1/FireTV?action=$action",
+            JSONObject().put("keyActionType", keyActionType).toString()
+        )
+        // Some firmware only knows the body-less form for a plain press.
+        if (keyActionType == "keyDownUp" && r.code in 400..499 && !r.unauthorized) {
+            return request("POST", "/v1/FireTV?action=$action")
+        }
+        return r
+    }
 
     @Throws(IOException::class)
     fun playPause(): Response = request("POST", "/v1/media?action=play")

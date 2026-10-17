@@ -31,6 +31,7 @@ class MainActivity : Activity(), DpadView.Listener {
     private val executor: ExecutorService = Executors.newSingleThreadExecutor()
     private val main = Handler(Looper.getMainLooper())
     private var lastErrorToast = 0L
+    @Volatile private var lastWakeAttempt = 0L
     private var setupOffered = false
     private var unauthorizedDialog: AlertDialog? = null
 
@@ -155,6 +156,22 @@ class MainActivity : Activity(), DpadView.Listener {
                     }
                 }
             } catch (e: Exception) {
+                // Port 8080 is closed while the Fire TV sleeps. Nudge it awake once, then retry.
+                val now = SystemClock.elapsedRealtime()
+                if (now - lastWakeAttempt > 10000) {
+                    lastWakeAttempt = now
+                    try {
+                        c.wake()
+                        Thread.sleep(1500)
+                        val r = call(c)
+                        main.post {
+                            if (client !== c) return@post
+                            if (r.unauthorized) onUnauthorized() else setStatus(true)
+                        }
+                        return@execute
+                    } catch (e2: Exception) {
+                    }
+                }
                 main.post {
                     if (client !== c) return@post
                     setStatus(false)
