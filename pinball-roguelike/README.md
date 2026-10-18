@@ -86,6 +86,20 @@ All in the inspector, no code needed:
 4. Export a debug APK, install it with `adb install`, and test on the real
    device. Flipper latency and launch feel can only be judged on hardware.
 
+### Building without a full Android SDK
+
+`tools/export_android.gd` exports an unsigned APK headless using only the
+export templates, then you sign it yourself:
+
+```
+godot --headless --editor -s res://tools/export_android.gd --path .
+java -jar uber-apk-signer.jar --apks export/pinball-roguelike-unsigned.apk \
+  --ks debug.keystore --ksAlias androiddebugkey --ksPass android --ksKeyPass android \
+  --out export/
+```
+
+The APK is arm64 only. Install it with "install from unknown sources" enabled.
+
 ## Phase 1 exit gate
 
 You and two other people play this grey box for ten minutes and want another
