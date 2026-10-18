@@ -1,0 +1,25 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scenes/table/ball.gd" id="1_ball"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_ball"]
+radius = 4.0
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_ball"]
+friction = 0.2
+bounce = 0.25
+
+[node name="Ball" type="RigidBody2D"]
+collision_layer = 2
+collision_mask = 5
+physics_material_override = SubResource("PhysicsMaterial_ball")
+continuous_cd = 2
+max_contacts_reported = 4
+contact_monitor = true
+can_sleep = false
+linear_damp = 0.05
+angular_damp = 1.0
+script = ExtResource("1_ball")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_ball")
