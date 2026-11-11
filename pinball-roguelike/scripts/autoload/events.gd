@@ -16,5 +16,9 @@ signal objective_hint(direction: int)
 signal upgrade_offered(offers: Array)
 signal item_picked(item: ItemData)
 signal insurance_used
+## Every target in a drop target bank is down.
+signal bank_completed
+## Short message for the HUD, such as "KICKBACK".
+signal toast(text: String)
 signal run_started
 signal run_ended(won: bool, scrap: int, run_time: float)

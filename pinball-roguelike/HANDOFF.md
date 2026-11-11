@@ -37,6 +37,7 @@ Do not reopen these without being asked.
 | docs/01-research-and-direction.md | Comparable games, why each decision was made, free asset packs and licences |
 | docs/02-run-rules-and-sector-one.md | Run rules, the five sectors, paper layout of the Sump, tuning targets |
 | docs/03-power-ups.md | First 30 power-ups, fusions, example builds, balance rules |
+| docs/04-table-elements.md | How each real pinball part works, how ours copies it, layout references, shot map |
 | docs/00-plan.md | The original phase plan. Phases still apply, dates do not |
 | README.md | Controls, folder map, tuning knobs |
 | docs/pitch-and-pillars.md, art-bible.md, run-loop.md, playtest-log.md | Empty templates. Fill in as work reaches them |
@@ -46,6 +47,13 @@ Do not reopen these without being asked.
 A grey-box run loop. The Sump is the only sector, so it repeats as
 sector 2, 3 and onward until Night Market exists. Six power-ups work. No
 art, no sound, no hideout.
+
+The Sump has two levels joined by a ramp. Lower level: flippers,
+slingshots, inlanes, outlanes with gates, a left kickback, a three-target
+drop bank, valves 1 and 2, a patrol drone, the ramp. Upper level: two
+upper flippers on ledges, three pop bumpers, a saucer, valve 3, a drone,
+the gate and lift. A spinner hangs in the gap between the upper flippers.
+docs/04-table-elements.md explains each part.
 
 ```
 scenes/main/Main.tscn          run manager: Sector, Hud, UpgradeScreen
@@ -60,7 +68,14 @@ scenes/table/                  reusable pieces
   flipper.gd / Flipper.tscn    AnimatableBody2D plus explicit kick.
                                Overclock, Mag Grip
   drone.gd / Drone.tscn        patrol enemy, take_damage(), hit cooldown
-  bumper, slingshot, valve, gate, lift, spinner, drain, arc_flash
+  bumper.gd                    pop bumper: skirt zone throws the ball
+  drop_target.gd, drop_bank.gd bank of three, rearms outlane saves
+  kickback.gd                  left outlane save, single use until relit
+  outlane_gate.gd              diverting gate, closed on launch and bank
+  rail.gd                      ramp-top catch and wire rail ride
+  saucer.gd                    kickout hole
+  spinner.gd                   spins by ball speed, pays per half turn
+  slingshot, valve, gate, lift, drain, arc_flash
   greybox_body.gd              draws collision shapes as flat colour
 scenes/ui/Hud.tscn             shield, scrap, valves, sector, timer, items,
                                off-screen hint, toasts
@@ -135,17 +150,21 @@ godot --headless --fixed-fps 60 --path . -s res://tests/<name>.gd
 
 | Test | What it proves | Last result |
 |------|----------------|-------------|
-| `flipper_power_test` | A flip from four points on the flipper would climb at least 430 px | 358 to 499 px, PASS |
-| `mini_flipper_reach_test` | At least 3 of 12 flip timings on the mini flipper touch valve 3 | 5, PASS |
+| `flipper_power_test` | A flip from four points on the flipper would climb at least 430 px | 452 to 560 px, PASS |
 | `drone_top_test` | A ball landing on a drone costs it at most 1 hit point and slides off | 1 each, PASS. The old drone lost all 3 |
 | `items_test` | Each item's effect, slot limits, offers, and the lift-to-next-sector flow | 19 of 19, PASS |
+| `elements_test` | Each table part behaves like the real mechanism: bumper throw, kickback, gates, drop bank, ramp make and roll-back, saucer, spinner, flipper aim | 16 of 16, PASS |
+| `shot_map_test` | Every target can be reached from a named flipper. Prints the map | 8 of 8, PASS |
 | `sump_bot_test` | A full run with a bot that flips blindly and picks random upgrades, up to 3 sectors | See below |
 
 `sump_bot_test` prints sectors cleared and when, items picked, escapes,
-drains, shield, clones seen and resting spots. It is not deterministic, so
-run several in parallel. Last 12 runs: 2 cleared all 3 sectors, 8 cleared
-2, 1 cleared 1, 1 died in sector one. 0 escapes, 0 resting spots, 0
-errors. The bot cannot aim, so it is far slower than a person.
+drains split by centre, left outlane and right outlane, shield, clones
+and resting spots. It is not deterministic, so run several in parallel.
+Last 12 runs on the 0.5.0 table: 2 cleared sector one, 10 lost all
+shield, 0 escapes, 0 resting spots, 0 errors. Drains: 18 centre, 11 left
+outlane, 22 right outlane. The bot flips blindly and cannot make the
+ramp-then-upper-flipper climb on purpose, so it is a bug finder, not a
+difficulty measure.
 
 **Screenshots without a phone.** The container has a virtual display:
 
@@ -196,24 +215,44 @@ to check layout and readability. Extend the script for new screens.
   before freeing it, so its signal handlers cannot double-count events
   from the new one. Tests must look the sector up by name each time,
   because the node changes.
+- **Pop bumpers fire from a skirt zone,** not from collisions, so they
+  report to the ball with `note_bumper_hit()`. Arc Ball and Splitter
+  hook there, not in `_on_body_entered`.
+- **Riding balls are frozen.** The rail and saucer set `freeze` and clear
+  the ball's collision layers. Anything that pushes balls (flippers,
+  bumpers, ball search) skips frozen balls.
+- **Nothing may hang over a flipper.** The slingshot's lower corner once
+  sat above the left flipper's base and killed every base shot. Keep
+  slingshot corners above the inlane, not the bat.
+- **Wedges between a round target and a wall.** A ball rested between
+  valve 2 and the plunger wall. Leave at least 13 px (ball plus 3) or
+  zero, never a gap smaller than the ball.
+- **Shot map randomness.** Pop bumper scatter is random, so
+  `shot_map_test` seeds the generator. If a layout change makes a reach
+  check flip between runs, the shot is marginal: move the target.
 - **Flippers start at angle zero** for the first tenth of a second.
   Cosmetic, unfixed.
 
 ## 8. What to build next, in order
 
-1. **Sector two, Night Market, and the real fall rule.** A drain in
+1. **Difficulty check by a person.** The 0.5.0 Sump is much harder for
+   the bot than 0.4.0. Ask Ashley to play it on a laptop or phone and
+   say whether ball time and the climb feel fair. Tuning knobs: outlane
+   gate `closed_seconds`, ramp gravity in `RampZone`, flipper tip gap
+   (pivots at x 78 and 170), kickback relight rule.
+2. **Second ramp.** Some targets are reachable from one flipper only (see
+   the shot map in docs/04). A left ramp fed by the right flipper would
+   balance the table, as in most two-ramp fan layouts.
+3. **Sector two, Night Market, and the real fall rule.** A drain in
    sector two drops the ball into the Sump's catch lane, and the open
    lift becomes a launch tube back up (docs/02). `main.gd` already loads
    sectors by depth from `SECTOR_SCENES`. The drain rule is isolated in
-   `sector.gd` `_on_ball_drained`. Night Market's enemy is gang turrets,
-   its gate a mag-rail tube.
-2. **More items.** Grow from 6 toward the 30 in docs/03, a few per
-   family at a time, keeping every tag present in every family. Add
-   fusions once two ball mods share a tag.
-3. **Art pass on the Sump** once layout stops changing. Palette first.
-   Warped City (CC0) is the style anchor. Table furniture needs original
-   art because the free packs are side-view.
-4. **Hideout.** Scrap carries home. Two buildings to start.
+   `sector.gd` `_on_ball_drained`. Use docs/04's references for its
+   layout: Twilight Zone or Medieval Madness style.
+4. **More items.** Grow from 6 toward the 30 in docs/03, a few per
+   family at a time, keeping every tag present in every family.
+5. **Art pass on the Sump** once layout stops changing.
+6. **Hideout.** Scrap carries home. Two buildings to start.
 
 Sound stays out until Ashley asks for it.
 
@@ -237,6 +276,17 @@ Sound stays out until Ashley asks for it.
   Magnet. HUD shows sector, items and an Insurance toast. Unlit valves
   now pulse brightly and lit ones go dim. Added `drone_top_test`,
   `items_test`, `screenshot.gd`, and a multi-sector bot.
+- Feedback on 0.4.0: needs real table parts. Traps either side of the
+  flippers that stay closed until a certain point or close as a bonus.
+  Ramps, rails, more flippers. Flippers too short. Bumpers bounce instead
+  of kicking.
+- 0.5.0: Researched real parts (docs/04). Rebuilt the Sump as two
+  levels: outlanes with diverting gates on both sides, left kickback,
+  drop bank, ramp with wire rail, spinner, saucer, pop bumpers that throw
+  the ball, two upper flippers. Flippers 28 to 38 px, ball 8 to 10 px.
+  Flipper aim now follows real bats: tip across, base up its own side.
+  Added `elements_test` and `shot_map_test`; removed
+  `mini_flipper_reach_test`.
 
 ## 9. Working rules
 

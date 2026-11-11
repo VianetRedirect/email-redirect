@@ -5,8 +5,11 @@ Android first, portrait, pixel art. Built in Godot 4.4.
 
 This is a grey-box build of the run loop. The Sump is the only sector, so
 it repeats until Night Market exists. Light three valves, open the lift,
-pick one of three power-ups, climb again. Six power-ups work. There is no
-art or sound yet. That is deliberate.
+pick one of three power-ups, climb again. Six power-ups work. The Sump
+uses real pinball parts: ramp and wire rail, outlane gates, kickback,
+drop targets, pop bumpers, saucer, spinner and upper flippers
+(docs/04-table-elements.md). There is no art or sound yet. That is
+deliberate.
 
 New to the project? Read `HANDOFF.md` first.
 

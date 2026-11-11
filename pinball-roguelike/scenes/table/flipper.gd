@@ -2,8 +2,13 @@
 ## move, but that alone gives a weak shot (the ball only inherits surface
 ## speed). So each upswing also gives any ball resting on or near the
 ## flipper one explicit kick along the flipper's normal. The kick grows
-## from base to tip, like a real flipper, and its direction depends on the
-## flipper's angle at that instant, so timing aims the shot.
+## from base to tip, like a real flipper.
+##
+## Aim works as on a real table. A ball near the base rides the bat through
+## its whole stroke and leaves toward the flipper's own side (a backhand).
+## A ball near the tip is struck early in the stroke and leaves across the
+## table. So the player aims by choosing when to flip as the ball rolls
+## down the bat.
 ##
 ## Flipper power-ups hook in here: Overclock and Mag Grip.
 extends AnimatableBody2D
@@ -19,7 +24,7 @@ const GRIP_DAMPING := 0.8
 
 @export var mirrored := false
 @export var action := "flipper_left"
-@export var length := 28.0
+@export var length := 38.0
 @export var rest_degrees := 25.0
 @export var active_degrees := -30.0
 ## Radians per second. 20 gets rest to active in about 50 ms.
@@ -28,6 +33,11 @@ const GRIP_DAMPING := 0.8
 @export var kick_base := 520.0
 ## Ball speed along the flipper normal for a hit at the tip.
 @export var kick_tip := 900.0
+## Shot direction in degrees from straight up for a hit at the pivot end.
+## Negative leans toward the flipper's own side.
+@export var aim_base_degrees := -2.0
+## Shot direction for a hit at the tip. Positive leans across the table.
+@export var aim_tip_degrees := 30.0
 @export var color := Color(0.91, 0.77, 0.28)
 
 @onready var _poly: CollisionPolygon2D = $CollisionPolygon2D
@@ -91,13 +101,14 @@ func _update_overclock(delta: float) -> void:
 
 
 func _kick_balls() -> void:
-	var normal := Vector2.UP.rotated(global_rotation)
 	for ball in get_tree().get_nodes_in_group("balls"):
-		if _kicked.has(ball.get_instance_id()):
+		if _kicked.has(ball.get_instance_id()) or ball.freeze:
 			continue
 		var t := _contact_fraction(ball)
 		if t < 0.0:
 			continue
+		var aim := deg_to_rad(lerpf(aim_base_degrees, aim_tip_degrees, t)) * _dir()
+		var normal := Vector2.UP.rotated(aim)
 		var speed := lerpf(kick_base, kick_tip, t) * _press_power
 		if _press_power > 1.0:
 			ball.boost_time = OVERCLOCK_BOOST_SECONDS
@@ -121,11 +132,14 @@ func _grip_balls() -> void:
 ## How far along the flipper a ball sits, 0 at the pivot and 1 at the tip,
 ## or -1 if the ball is not on or just above the flipper.
 func _contact_fraction(ball: Node2D) -> float:
+	# The zone reaches a little behind the pivot and well above the bat, so
+	# a ball resting where the inlane meets the flipper still gets a full
+	# shot instead of a weak shove from the bat's body.
 	var local: Vector2 = to_local(ball.global_position)
 	var along := local.x * _dir()
-	if along < -3.0 or along > length + 4.0:
+	if along < -(ball.radius + 3.0) or along > length + 4.0:
 		return -1.0
-	if local.y > 2.0 or local.y < -(ball.radius + 8.0):
+	if local.y > 2.0 or local.y < -(ball.radius + 11.0):
 		return -1.0
 	return clampf(along / length, 0.0, 1.0)
 

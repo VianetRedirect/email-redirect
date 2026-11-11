@@ -24,8 +24,10 @@ if [ -z "${SKIP_TESTS:-}" ]; then
 	"$GODOT" --headless --fixed-fps 60 --path "$PROJECT" -s res://tests/drone_top_test.gd 2>&1 | grep -E "RESULT|SCRIPT ERROR" | tee /dev/stderr | grep -q "PASS"
 	echo "== items test"
 	"$GODOT" --headless --fixed-fps 60 --path "$PROJECT" -s res://tests/items_test.gd 2>&1 | grep -E "CHECK FAIL|RESULT|SCRIPT ERROR" | tee /dev/stderr | grep -q "RESULT.*PASS"
-	echo "== mini flipper reach test"
-	"$GODOT" --headless --fixed-fps 60 --path "$PROJECT" -s res://tests/mini_flipper_reach_test.gd 2>&1 | grep -E "RESULT|SCRIPT ERROR" | tee /dev/stderr | grep -q "PASS"
+	echo "== table elements test"
+	"$GODOT" --headless --fixed-fps 60 --path "$PROJECT" -s res://tests/elements_test.gd 2>&1 | grep -E "CHECK FAIL|RESULT|SCRIPT ERROR" | tee /dev/stderr | grep -q "RESULT.*PASS"
+	echo "== shot map test"
+	"$GODOT" --headless --fixed-fps 60 --path "$PROJECT" -s res://tests/shot_map_test.gd 2>&1 | grep -E "CHECK FAIL|RESULT|SCRIPT ERROR" | tee /dev/stderr | grep -q "RESULT.*PASS"
 	echo "== sump bot smoke test (3 sectors, up to 15 simulated minutes)"
 	"$GODOT" --headless --fixed-fps 60 --path "$PROJECT" -s res://tests/sump_bot_test.gd 2>&1 | grep -E "RESULT|SCRIPT ERROR" || true
 fi

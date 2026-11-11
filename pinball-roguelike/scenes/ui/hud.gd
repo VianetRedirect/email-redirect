@@ -26,6 +26,7 @@ func _ready() -> void:
 	Events.gate_opened.connect(_on_gate_opened)
 	Events.objective_hint.connect(_on_hint)
 	Events.insurance_used.connect(func(): _show_toast("INSURED: NO SHIELD LOST"))
+	Events.toast.connect(_show_toast)
 	Events.run_started.connect(func(): _message.visible = false)
 	Events.run_ended.connect(_on_run_ended)
 	_on_shield(GameState.shield)

@@ -142,12 +142,12 @@ func _process(delta: float) -> bool:
 			_ball = _new_ball(Vector2(165, 300))
 			_wait = 0.05
 		3:
-			var bumper: Node = _sector().get_node("Bumpers/BumperLower")
-			_ball._on_body_entered(bumper)
+			var bumper: Node = _sector().get_node("Bumpers/Bumper1")
+			_ball.note_bumper_hit(bumper)
 			_check("arc_ball_damages_nearby_enemy", _drone.hp == 2, "hp=%d" % _drone.hp)
 			_fresh([])
 			_drone._cooldown = 0.0
-			_ball._on_body_entered(bumper)
+			_ball.note_bumper_hit(bumper)
 			_check("no_arc_without_item", _drone.hp == 2, "hp=%d" % _drone.hp)
 			_drone.free()
 			_clear_balls()
@@ -157,9 +157,9 @@ func _process(delta: float) -> bool:
 			_ball.linear_velocity = Vector2(0, -200)
 			_wait = 0.05
 		4:
-			var bumper: Node = _sector().get_node("Bumpers/BumperLower")
+			var bumper: Node = _sector().get_node("Bumpers/Bumper1")
 			for i in 3:
-				_ball._on_body_entered(bumper)
+				_ball.note_bumper_hit(bumper)
 			_wait = 0.05
 		5:
 			var clones := []

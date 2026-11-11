@@ -10,7 +10,7 @@ const CLONE_SECONDS := 6.0
 const ArcScene := preload("res://scenes/table/arc_flash.gd")
 
 @export var max_speed := 950.0
-@export var radius := 4.0
+@export var radius := 5.0
 @export var damage := 1
 @export var color := Color(0.95, 0.95, 0.98)
 
@@ -57,13 +57,19 @@ func _on_body_entered(body: Node) -> void:
 		body.on_ball_hit(self)
 	if body.is_in_group("flippers"):
 		_bumper_streak = 0
-	if GameState.has_item(&"arc_ball") and _is_target(body):
+	if GameState.has_item(&"arc_ball") and _is_target(body) and not body.is_in_group("bumpers"):
 		_arc(body)
-	if body.is_in_group("bumpers"):
-		_bumper_streak += 1
-		if _bumper_streak >= SPLITTER_STREAK and not is_clone and GameState.has_item(&"splitter"):
-			_bumper_streak = 0
-			_split.call_deferred()
+
+
+## Called by a pop bumper when it fires at this ball. Bumpers trigger on
+## their skirt, slightly before contact, so they report hits themselves.
+func note_bumper_hit(bumper: Node) -> void:
+	if GameState.has_item(&"arc_ball"):
+		_arc(bumper)
+	_bumper_streak += 1
+	if _bumper_streak >= SPLITTER_STREAK and not is_clone and GameState.has_item(&"splitter"):
+		_bumper_streak = 0
+		_split.call_deferred()
 
 
 ## Targets are hittable table objects (layer 4) and flippers, not walls.

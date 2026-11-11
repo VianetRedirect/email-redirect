@@ -30,6 +30,9 @@ var _next_trace := 0.0
 var _still := 0.0
 var _rest_spots := {}
 var _max_clones := 0
+## Where each drain happened: "centre", "left_out" or "right_out".
+var _drain_where := {"centre": 0, "left_out": 0, "right_out": 0}
+var _last_pos := Vector2.ZERO
 
 
 func _initialize() -> void:
@@ -42,11 +45,21 @@ func _initialize() -> void:
 	_state = root.get_node("GameState")
 	_main = load("res://scenes/main/Main.tscn").instantiate()
 	root.add_child(_main)
-	_events.ball_drained.connect(func(): _drains += 1)
+	_events.ball_drained.connect(_on_drained)
 	_events.ball_escaped.connect(func(): _escapes += 1)
 	_events.sector_cleared.connect(_on_cleared)
 	_events.upgrade_offered.connect(func(_o): _pick_in = 0.3)
 	_events.run_ended.connect(func(_w, _s, _rt): _ended = true)
+
+
+func _on_drained() -> void:
+	_drains += 1
+	var where := "centre"
+	if _last_pos.x < 26.0:
+		where = "left_out"
+	elif _last_pos.x > 222.0:
+		where = "right_out"
+	_drain_where[where] += 1
 
 
 func _on_cleared() -> void:
@@ -82,14 +95,15 @@ func _process(delta: float) -> bool:
 	for ball in get_nodes_in_group("balls"):
 		if ball.is_clone:
 			clones += 1
-		var p: Vector2 = ball.position
-		var over_main: bool = p.y > 636.0 and p.y < 676.0 and p.x > 86.0 and p.x < 162.0
-		var over_mini: bool = p.y > 222.0 and p.y < 256.0 and p.x > 62.0 and p.x < 96.0
-		if (over_main or over_mini) and ball.linear_velocity.y > -40.0:
-			any_over = true
+		if ball.freeze or ball.linear_velocity.y < -40.0:
+			continue
+		for f in get_nodes_in_group("flippers"):
+			if f._contact_fraction(ball) >= 0.0:
+				any_over = true
 	_max_clones = maxi(_max_clones, clones)
 	if is_instance_valid(b):
 		var p: Vector2 = b.position
+		_last_pos = p
 		var in_lane: bool = p.x > 248.0 and p.y > 336.0
 		if in_lane and b.linear_velocity.length() < 5.0 and _launch_hold < 0.0:
 			_action("launch", true)
@@ -122,8 +136,8 @@ func _process(delta: float) -> bool:
 		for k in _rest_spots:
 			if _rest_spots[k] > 0.5:
 				spots.append("%s:%.0fs" % [str(k), _rest_spots[k]])
-		print("RESULT sectors_cleared=%d clear_at=%s items=%s escapes=%d drains=%d shield=%d run_over=%s max_clones=%d scrap=%d t=%.0f rest_spots=[%s]" % [
-			_clear_times.size(), str(_clear_times), str(_picked), _escapes, _drains,
+		print("RESULT sectors_cleared=%d clear_at=%s items=%s escapes=%d drains=%d %s shield=%d run_over=%s max_clones=%d scrap=%d t=%.0f rest_spots=[%s]" % [
+			_clear_times.size(), str(_clear_times), str(_picked), _escapes, _drains, str(_drain_where),
 			_state.shield, str(not _state.run_active), _max_clones, _state.scrap, _t, ", ".join(spots)])
 		return true
 	return false

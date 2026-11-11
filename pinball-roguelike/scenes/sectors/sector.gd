@@ -113,7 +113,7 @@ func _update_hint() -> void:
 
 
 func _ball_search(delta: float) -> void:
-	if not is_instance_valid(_ball) or _ball_in_lane():
+	if not is_instance_valid(_ball) or _ball_in_lane() or _ball.freeze:
 		_still_time = 0.0
 		return
 	# A ball cradled on a held flipper is the player's choice, not a jam.

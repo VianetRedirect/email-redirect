@@ -46,6 +46,10 @@ camera follows the ball vertically and never scrolls sideways.
 
 ## Sector one: The Sump
 
+**Superseded in 0.5.0.** The sketch below is the first paper layout. The
+Sump is now two levels with real pinball parts. See
+docs/04-table-elements.md for the current layout and why.
+
 Teaching sector. One idea at a time, bottom to top. Coordinates are in
 pixels, origin at the sector's top-left, y grows downward.
 
