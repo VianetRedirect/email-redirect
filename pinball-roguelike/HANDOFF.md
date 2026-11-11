@@ -12,8 +12,9 @@ what to build next.
 - A drain costs one shield and drops you one sector. A drain at zero shield ends the run.
 - Three power-up families: ball (3 slots), flipper (2 slots), passive (4 slots). A hideout between runs spends scrap.
 
-The owner is Ashley. He plays builds on his own Android phone and gives
-feedback from that. He liked Ball x Pit: short runs plus a base.
+The owner is Ashley. They play builds on their Android phone and liked
+Ball x Pit: short runs plus a base. Their pronouns have not been stated,
+so use they/them.
 
 ## 2. Decisions that are locked
 
@@ -42,23 +43,34 @@ Do not reopen these without being asked.
 
 ## 4. What exists in code
 
-A grey-box build of sector one, the Sump. No art, no sound, no power-ups,
-no hideout.
+A grey-box run loop. The Sump is the only sector, so it repeats as
+sector 2, 3 and onward until Night Market exists. Six power-ups work. No
+art, no sound, no hideout.
 
 ```
-scenes/main/Main.tscn          entry point: one Sector plus the Hud
+scenes/main/Main.tscn          run manager: Sector, Hud, UpgradeScreen
+scenes/main/main.gd            lift -> pause and offer upgrades -> pick ->
+                               restore 1 shield -> load next sector.
+                               Run over -> tap restarts
 scenes/sectors/Sump.tscn       sector one layout, 270x720, edit geometry here
 scenes/sectors/sector.gd       ball, plunger, touch input, camera follow,
-                               objective, drain rule, ball search
+                               objective, drain rule, ball search, escape net
 scenes/table/                  reusable pieces
-  ball.gd / Ball.tscn          speed cap, reports hits via on_ball_hit(ball)
-  flipper.gd / Flipper.tscn    AnimatableBody2D plus an explicit kick
-  bumper, slingshot, valve, drone, gate, lift, spinner, drain
+  ball.gd / Ball.tscn          speed cap, hit reporting, Arc Ball, Splitter
+  flipper.gd / Flipper.tscn    AnimatableBody2D plus explicit kick.
+                               Overclock, Mag Grip
+  drone.gd / Drone.tscn        patrol enemy, take_damage(), hit cooldown
+  bumper, slingshot, valve, gate, lift, spinner, drain, arc_flash
   greybox_body.gd              draws collision shapes as flat colour
-scenes/ui/Hud.tscn             shield, scrap, valves, timer, off-screen hint
+scenes/ui/Hud.tscn             shield, scrap, valves, sector, timer, items,
+                               off-screen hint, toasts
+scenes/ui/UpgradeScreen.tscn   three item cards, coloured by family
 scenes/base/Base.tscn          empty placeholder for the hideout
 scripts/autoload/events.gd     signal bus
-scripts/autoload/game_state.gd shield, scrap, nodes lit, timer
+scripts/autoload/game_state.gd shield, scrap, items, slots, depth, passives
+scripts/items/item_data.gd     ItemData resource: id, family, tags, text
+scripts/items/item_db.gd       list of every offerable item
+items/*.tres                   one file per item
 tests/                         headless tests (section 6)
 tools/                         build scripts (section 5)
 ```
@@ -67,15 +79,29 @@ How the pieces talk:
 
 - The ball calls `on_ball_hit(ball)` on anything it touches that has the
   method. New table objects only need that method.
+- Enemies join the group `enemies` and expose `take_damage(amount) -> bool`.
+  Anything that hurts enemies (Arc Ball, future Burn effects) calls that.
 - Table objects emit on `Events`. `GameState` and the `Hud` listen. Nothing
   holds a reference to the HUD.
 - Physics layers: 1 walls, flippers, gate. 2 ball. 4 hittable objects
-  (bumpers, slingshots, valves, drones). The ball's mask is 1 + 4.
-- Objective nodes join the group `objective_nodes`. Balls join `balls`.
+  (bumpers, slingshots, valves, drones). The ball's mask is 1 + 4, so
+  balls never hit each other.
+- Groups: `objective_nodes`, `balls`, `enemies`, `bumpers`, `flippers`.
 
-What works, verified by the tests: launch, lane exit, both main flippers
-and the mini flipper, three valves, gate opening, lift ending the run as a
-win, drains costing shield, run over at zero shield, camera follow, HUD.
+How items work:
+
+- Data is a `.tres` per item in `items/`, listed in `scripts/items/item_db.gd`.
+- Behaviour lives where the family hooks in: ball mods in `ball.gd`,
+  flipper mods in `flipper.gd`, passives in `game_state.gd`. Code asks
+  `GameState.has_item(&"id")`.
+- Slots: 3 ball, 2 flipper, 4 passive. `GameState.roll_offers(3)` offers
+  items the player can still take.
+- Splitter clones have `is_clone = true`. They never cost shield, vanish
+  in the lift, and expire after 6 seconds.
+- Overclock lets that one shot exceed the normal speed cap (950) up to
+  1150 for 0.6 seconds. No escapes seen in bot runs, but watch for it.
+- Scrap Magnet is +25% only. The "scrap drifts to the ball" half of its
+  design waits for scrap pickups, which do not exist yet.
 
 ## 5. Build and test in a cloud container
 
@@ -85,8 +111,8 @@ tools/setup_build_env.sh     # once per container. Downloads about 1.3 GB
 tools/build_apk.sh           # tests, then export/pinball-roguelike-debug.apk
 ```
 
-Then send the APK to Ashley with the file-sending tool. He installs it by
-hand. It is arm64 only and signed with `tools/debug.keystore`, which is
+Then send the APK to Ashley with the file-sending tool. They install it
+by hand. It is arm64 only and signed with `tools/debug.keystore`, which is
 committed on purpose so each build installs over the last one.
 
 `build_apk.sh` has been run end to end. `setup_build_env.sh` was written
@@ -104,25 +130,31 @@ Network facts for the cloud container:
 
 ```
 godot --headless --path . --import      # always first, see gotchas
-godot --headless --fixed-fps 60 --path . -s res://tests/flipper_power_test.gd
-godot --headless --fixed-fps 60 --path . -s res://tests/sump_bot_test.gd
+godot --headless --fixed-fps 60 --path . -s res://tests/<name>.gd
 ```
 
-- `flipper_power_test` rests a ball at four points on the left flipper,
-  flips, and converts launch speed to the height it would climb. It must
-  be at least 430 px. Current result: 358 to 499 px, PASS. The first build
-  managed 148 px, which was the "flippers are weak" complaint.
-- `mini_flipper_reach_test` rolls a ball onto the mini flipper and flips
-  at twelve different timings. At least three must touch valve 3.
-  Current: five, PASS. Before the fix in 0.3.0 none could.
-- `sump_bot_test` plays the sector with a bot that flips whenever the ball
-  is over a flipper. It prints whether the ball escaped the table, when
-  each valve was lit, whether the lift was reached, drains, scrap, any
-  resting spots, and time per height band after the gate opens. The bot
-  cannot aim, so valve 3 is slow for it. Last 16 runs: 12 cleared within
-  ten simulated minutes, 0 escapes, 0 resting spots. Set `TRACE` to true
-  to print ball positions every 10 seconds. Runs are not deterministic,
-  so run several in parallel.
+| Test | What it proves | Last result |
+|------|----------------|-------------|
+| `flipper_power_test` | A flip from four points on the flipper would climb at least 430 px | 358 to 499 px, PASS |
+| `mini_flipper_reach_test` | At least 3 of 12 flip timings on the mini flipper touch valve 3 | 5, PASS |
+| `drone_top_test` | A ball landing on a drone costs it at most 1 hit point and slides off | 1 each, PASS. The old drone lost all 3 |
+| `items_test` | Each item's effect, slot limits, offers, and the lift-to-next-sector flow | 19 of 19, PASS |
+| `sump_bot_test` | A full run with a bot that flips blindly and picks random upgrades, up to 3 sectors | See below |
+
+`sump_bot_test` prints sectors cleared and when, items picked, escapes,
+drains, shield, clones seen and resting spots. It is not deterministic, so
+run several in parallel. Last 12 runs: 2 cleared all 3 sectors, 8 cleared
+2, 1 cleared 1, 1 died in sector one. 0 escapes, 0 resting spots, 0
+errors. The bot cannot aim, so it is far slower than a person.
+
+**Screenshots without a phone.** The container has a virtual display:
+
+```
+xvfb-run -a godot --rendering-driver opengl3 --path . -s res://tests/screenshot.gd -- OUT_DIR
+```
+
+It writes `play.png`, `top.png` and `upgrade.png` at 2x scale. Read them
+to check layout and readability. Extend the script for new screens.
 
 ## 7. Gotchas already paid for
 
@@ -157,32 +189,31 @@ godot --headless --fixed-fps 60 --path . -s res://tests/sump_bot_test.gd
   only a thin strip on the upper part of each slingshot kicks.
 - **Launch strength.** The ball needs about 600 px/s to clear the lane.
   If gravity changes, retune `launch_min` and `launch_max`.
+- **Pausing.** The upgrade screen pauses the tree. Timers that must
+  freeze during it need `create_timer(t, false)`. UI that must work
+  while paused needs `process_mode = ALWAYS`.
+- **Swapping sectors.** `main.gd` removes the old sector from the tree
+  before freeing it, so its signal handlers cannot double-count events
+  from the new one. Tests must look the sector up by name each time,
+  because the node changes.
 - **Flippers start at angle zero** for the first tenth of a second.
   Cosmetic, unfixed.
 
 ## 8. What to build next, in order
 
-1. **Get Ashley's phone feedback on this build** before adding anything.
-   Ask about flipper strength, whether the climb reads, and whether drones
-   deflecting the ball feels fair. The three open questions are at the
-   end of docs/02.
-2. **Resting spots: done in 0.3.0.** None found in 16 bot runs. The
-   "idle" stretches were the ball escaping the table (drone bug, fixed)
-   and valve 3 being unreachable (moved, mini flipper strengthened).
-3. **Upgrade screen.** On reaching the lift, pause and offer one of three
-   power-ups. Start with six items, two per family, chosen from docs/03 to
-   be as different as possible: Arc Ball, Splitter, Overclock, Mag Grip,
-   Insurance, Scrap Magnet. This needs an item resource type, slot limits
-   in GameState, and hooks in ball.gd and flipper.gd.
-4. **Sector two, Night Market**, and the real fall rule: a drain in sector
-   two drops the ball into the Sump's catch lane, and the open lift
-   becomes a launch tube back up. `sector.gd` already isolates the drain
-   rule in `_on_ball_drained`. Main must become a run manager that owns
-   several sectors.
-5. **Art pass on the Sump** once layout stops changing. Palette first.
+1. **Sector two, Night Market, and the real fall rule.** A drain in
+   sector two drops the ball into the Sump's catch lane, and the open
+   lift becomes a launch tube back up (docs/02). `main.gd` already loads
+   sectors by depth from `SECTOR_SCENES`. The drain rule is isolated in
+   `sector.gd` `_on_ball_drained`. Night Market's enemy is gang turrets,
+   its gate a mag-rail tube.
+2. **More items.** Grow from 6 toward the 30 in docs/03, a few per
+   family at a time, keeping every tag present in every family. Add
+   fusions once two ball mods share a tag.
+3. **Art pass on the Sump** once layout stops changing. Palette first.
    Warped City (CC0) is the style anchor. Table furniture needs original
    art because the free packs are side-view.
-6. **Hideout.** Scrap carries home. Two buildings to start.
+4. **Hideout.** Scrap carries home. Two buildings to start.
 
 Sound stays out until Ashley asks for it.
 
@@ -193,7 +224,19 @@ Sound stays out until Ashley asks for it.
   Mini flipper kick raised to 470/680. Valve 3 moved from (80, 100) to
   (188, 100), where late flips from the mini flipper land. Valves
   enlarged from radius 9 to 11. Added escape safety net and
-  `mini_flipper_reach_test`. Still waiting on Ashley's phone feedback.
+  `mini_flipper_reach_test`.
+- Feedback on 0.3.0 from Ashley's phone: main flippers reach the top with
+  a good hit near the tip. The next valve is hard to see, but the arrow
+  is fine for now. Drones knocking the ball down feels fair. A drone's
+  top was "squishy": a ball landing on it took all 3 hits at once.
+  One and a half screens per sector is enough for now.
+- 0.4.0: Drone hit cooldown (0.35 s) and slide-off for balls landing on
+  top. Upgrade screen and run manager: lift pauses and offers 3 items,
+  pick restores 1 shield and loads the next sector (the Sump again).
+  Six items: Arc Ball, Splitter, Overclock, Mag Grip, Insurance, Scrap
+  Magnet. HUD shows sector, items and an Insurance toast. Unlit valves
+  now pulse brightly and lit ones go dim. Added `drone_top_test`,
+  `items_test`, `screenshot.gd`, and a multi-sector bot.
 
 ## 9. Working rules
 
@@ -205,11 +248,18 @@ Sound stays out until Ashley asks for it.
   to its own repository. Ashley has been told. Ask before moving it.
 - Ashley's organisation requires this format for decisions: offer options,
   give each a confidence of high, medium or low, rank them, say plainly
-  when his own idea is not high confidence and why, then do it his way
-  once he decides.
-- His preferences mention about-me, writing-rules and memory files. They
+  when their own idea is not high confidence and why, then do it their
+  way once they decide.
+- Their preferences mention about-me, writing-rules and memory files. They
   were not present in the cloud container. Say so once if they are still
   missing and carry on.
-- Keep prose plain. Short sentences, no jargon he has not used.
-- Test before sending a build. A build that fails on his phone costs him
-  an install cycle.
+- Keep prose plain. Short sentences, no jargon they have not used.
+- **Testing rule, set by Ashley.** Test headless by default: the test
+  suite, bot runs and screenshots. Do not stop work to wait for phone
+  feedback. When a question can only be answered by playing (feel,
+  fairness, difficulty), ask Ashley to try it on a laptop: open the
+  project in Godot 4.4.1 and press F5. Mouse clicks act as touches, and
+  the keys are in README.md. Send an APK too when a build is worth
+  trying on the phone.
+- Test before sending a build. A build that fails on their phone costs
+  them an install cycle.

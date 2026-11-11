@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"arc_ball"
+display_name = "Arc Ball"
+family = 0
+rarity = 0
+tags = PackedStringArray("Shock")
+description = "Every hit on a target chains 1 damage to the nearest enemy within 60 px."
+short_name = "ARC"

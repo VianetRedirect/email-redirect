@@ -1,5 +1,6 @@
 ## Runs one sector: ball, plunger, touch input, camera, objective and the
-## drain rule. The Sump is sector one, so a drain here costs a shield and
+## drain rule. The run itself (items, moving between sectors, restarting)
+## belongs to main.gd. The Sump is sector one, so a drain here costs a shield and
 ## relaunches from the plunger. Higher sectors will drop the ball into the
 ## sector below instead (see docs/02-run-rules-and-sector-one.md).
 ##
@@ -46,7 +47,6 @@ func _ready() -> void:
 	Events.ball_drained.connect(_on_ball_drained)
 	Events.node_lit.connect(_on_node_lit)
 	Events.sector_cleared.connect(_on_sector_cleared)
-	GameState.start_run()
 	GameState.start_sector(get_tree().get_nodes_in_group("objective_nodes").size())
 	_camera.position = Vector2(get_viewport_rect().size.x * 0.5, sector_height - _view_height * 0.5)
 	_spawn_ball()
@@ -64,8 +64,6 @@ func _process(delta: float) -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if _run_over:
-		if event.is_pressed():
-			get_tree().reload_current_scene()
 		return
 	if event is InputEventScreenTouch:
 		_handle_touch(event)
@@ -137,6 +135,7 @@ func _escape_check() -> void:
 	var p := _ball.position
 	if p.x < -8.0 or p.x > 278.0 or p.y < -8.0 or p.y > sector_height + 8.0:
 		push_warning("Ball left the sector at %s, respawning" % str(p))
+		Events.ball_escaped.emit()
 		_ball.queue_free()
 		_ball = null
 		_release_all_touches()
@@ -214,13 +213,13 @@ func _on_node_lit(_node: Node2D) -> void:
 func _on_ball_drained() -> void:
 	_release_all_touches()
 	if GameState.take_drain():
-		await get_tree().create_timer(respawn_delay).timeout
-		_spawn_ball()
+		await get_tree().create_timer(respawn_delay, false).timeout
+		if is_inside_tree() and not _run_over:
+			_spawn_ball()
 	else:
 		_run_over = true
 
 
 func _on_sector_cleared() -> void:
 	_release_all_touches()
-	GameState.end_run(true)
 	_run_over = true

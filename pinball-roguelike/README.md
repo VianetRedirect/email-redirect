@@ -3,10 +3,10 @@
 A pinball game with roguelike runs and a base you build between them.
 Android first, portrait, pixel art. Built in Godot 4.4.
 
-This is a grey-box build of sector one, the Sump. There is no art, no sound
-and no power-ups yet. That is deliberate. Its job is to prove the climb:
-light three valves, open the lift, ride it out, without losing all your
-shield.
+This is a grey-box build of the run loop. The Sump is the only sector, so
+it repeats until Night Market exists. Light three valves, open the lift,
+pick one of three power-ups, climb again. Six power-ups work. There is no
+art or sound yet. That is deliberate.
 
 New to the project? Read `HANDOFF.md` first.
 

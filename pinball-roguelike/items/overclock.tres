@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"overclock"
+display_name = "Overclock"
+family = 1
+rarity = 0
+tags = PackedStringArray()
+description = "Hold a raised flipper for 1 second to charge it. Its next flip is 40% stronger."
+short_name = "OVRCK"

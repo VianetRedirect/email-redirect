@@ -1,4 +1,5 @@
-## The drain under the flippers. A ball that enters is lost.
+## The drain under the flippers. A ball that enters is lost. Losing a
+## Splitter clone costs nothing.
 extends Area2D
 
 
@@ -9,4 +10,5 @@ func _ready() -> void:
 func _on_body_entered(body: Node) -> void:
 	if body is Ball:
 		body.queue_free()
-		Events.ball_drained.emit()
+		if not body.is_clone:
+			Events.ball_drained.emit()
