@@ -53,7 +53,7 @@ pixels, origin at the sector's top-left, y grows downward.
 y=0    +-------------------------------+
        |        [ FREIGHT LIFT ]       |  gate, opens when 3 valves lit
  80    |   \                       /   |  funnel walls into the lift
-       |      (V3)                     |  valve 3, behind a drone patrol
+       |                     (V3)      |  valve 3, behind a drone patrol
 160    |  o       <~ drone ~>       o  |  two pop bumpers, one patrol drone
        |                               |
 240    |=====\                 /=======|  upper ledges, mini flipper on left
@@ -77,7 +77,7 @@ y=0    +-------------------------------+
 |---------|-------|-----------|
 | Main flippers | 2 | At y=640. Same feel as the grey box |
 | Mini flipper | 1 | Left ledge at y=260. Fires with the left side of the screen. Needed to reach valve 3 and the lift |
-| Valves (nodes) | 3 | Lit by one hit each. V1 is a direct shot. V2 needs a bank off the right slingshot or a right-flipper cross shot. V3 sits behind the upper drone |
+| Valves (nodes) | 3 | Lit by one hit each. V1 is a direct shot. V2 needs a bank off the right slingshot or a right-flipper cross shot. V3 sits behind the upper drone, right of centre, where a late flip from the mini flipper lands |
 | Pop bumpers | 3 | Kick the ball, drop 1 scrap per hit |
 | Spinner lane | 1 | Right side. A clean shot up it feeds the upper area and awards scrap per spin |
 | Scrap drones | 2 | Patrol left to right. 3 hit points. Touching one does not hurt you, it deflects the ball downward. Killing one drops 5 scrap |

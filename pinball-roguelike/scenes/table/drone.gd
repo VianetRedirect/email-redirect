@@ -1,6 +1,10 @@
 ## Scrap drone. Patrols left and right around its start position. It cannot
 ## hurt the ball, but it deflects it downward, so it guards whatever is
 ## above it. Three hits destroy it.
+##
+## Keep sync_to_physics OFF in Drone.tscn. With it on, moving the drone by
+## setting position each physics step desynced its collision body from its
+## visible position and fired balls through walls at max speed.
 extends AnimatableBody2D
 
 @export var patrol_half_width := 50.0

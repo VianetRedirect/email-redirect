@@ -20,6 +20,15 @@ var _clear_time := -1.0
 var _min_y := 9999.0
 var _ended := false
 var _next_trace := 0.0
+## Resting spots: a ball slower than 4 px/s for over 1 s outside the
+## plunger lane. Keyed by position rounded to 10 px, value is seconds.
+var _still := 0.0
+var _rest_spots := {}
+## Seconds spent in each 80 px band of height, after the gate opens.
+var _bands := {}
+## Last frames of ball state, printed if the ball leaves the table.
+var _history := []
+var _escaped := false
 ## Set true to print the ball position every 10 seconds.
 const TRACE := false
 
@@ -72,6 +81,24 @@ func _process(delta: float) -> bool:
 			if _launch_hold < 0.0:
 				_action("launch", false)
 		var p := b.position
+		var du = _sector.get_node_or_null("Drones/DroneUpper")
+		_history.append("%.2f pos=%s v=%s drone=%s" % [_t, str(p.round()), str(b.linear_velocity.round()), str(du.position.round()) if du else "dead"])
+		if _history.size() > 12:
+			_history.pop_front()
+		if not _escaped and (p.x < 0.0 or p.x > 270.0 or p.y < 0.0 or p.y > 720.0):
+			_escaped = true
+			print("ESCAPE\n" + "\n".join(_history))
+			_ended = true
+		if _gate_time >= 0.0:
+			var band := int(p.y / 80.0) * 80
+			_bands[band] = _bands.get(band, 0.0) + delta
+		if not in_lane and b.linear_velocity.length() < 4.0:
+			_still += delta
+			if _still > 1.0:
+				var key := Vector2i(roundi(p.x / 10.0) * 10, roundi(p.y / 10.0) * 10)
+				_rest_spots[key] = _rest_spots.get(key, 0.0) + delta
+		else:
+			_still = 0.0
 		var over_main: bool = p.y > 636.0 and p.y < 676.0 and p.x > 86.0 and p.x < 162.0
 		var over_mini: bool = p.y > 222.0 and p.y < 256.0 and p.x > 62.0 and p.x < 96.0
 		if _hold <= 0.0 and (over_main or over_mini) and b.linear_velocity.y > -40.0:
@@ -87,8 +114,19 @@ func _process(delta: float) -> bool:
 		_next_trace += 10.0
 		print("t=%4.0f ball=%s v=%s" % [_t, str(b.position.round()) if b else "none", str(b.linear_velocity.round()) if b else "-"])
 	if _ended or _t > MAX_SECONDS:
-		print("RESULT cleared=%s clear_t=%.0f gate_t=%.0f valves_lit_at=%s drains=%d shield=%d scrap=%d highest_y=%.0f t=%.0f" % [
-			str(_clear_time >= 0.0), _clear_time, _gate_time, str(_lit_times), _drains,
+		print("RESULT escaped=%s cleared=%s clear_t=%.0f gate_t=%.0f valves_lit_at=%s drains=%d shield=%d scrap=%d highest_y=%.0f t=%.0f" % [
+			str(_escaped), str(_clear_time >= 0.0), _clear_time, _gate_time, str(_lit_times), _drains,
 			_state.shield, _state.scrap, _min_y, _t])
+		var spots := []
+		for k in _rest_spots:
+			if _rest_spots[k] > 0.5:
+				spots.append("%s:%.0fs" % [str(k), _rest_spots[k]])
+		print("REST_SPOTS %s" % ", ".join(spots))
+		var keys := _bands.keys()
+		keys.sort()
+		var parts := []
+		for k in keys:
+			parts.append("%d:%.0f" % [k, _bands[k]])
+		print("BANDS_AFTER_GATE %s" % " ".join(parts))
 		return true
 	return false

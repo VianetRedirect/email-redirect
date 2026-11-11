@@ -20,6 +20,8 @@ echo "== import (builds the class cache, required before any -s script)"
 if [ -z "${SKIP_TESTS:-}" ]; then
 	echo "== flipper power test"
 	"$GODOT" --headless --fixed-fps 60 --path "$PROJECT" -s res://tests/flipper_power_test.gd 2>&1 | grep -E "RESULT|SCRIPT ERROR" | tee /dev/stderr | grep -q "PASS"
+	echo "== mini flipper reach test"
+	"$GODOT" --headless --fixed-fps 60 --path "$PROJECT" -s res://tests/mini_flipper_reach_test.gd 2>&1 | grep -E "RESULT|SCRIPT ERROR" | tee /dev/stderr | grep -q "PASS"
 	echo "== sump bot smoke test (up to 10 simulated minutes)"
 	"$GODOT" --headless --fixed-fps 60 --path "$PROJECT" -s res://tests/sump_bot_test.gd 2>&1 | grep -E "RESULT|SCRIPT ERROR" || true
 fi

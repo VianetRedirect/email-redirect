@@ -111,13 +111,18 @@ godot --headless --fixed-fps 60 --path . -s res://tests/sump_bot_test.gd
 - `flipper_power_test` rests a ball at four points on the left flipper,
   flips, and converts launch speed to the height it would climb. It must
   be at least 430 px. Current result: 358 to 499 px, PASS. The first build
-  managed 148 px, which is the "flippers are weak" complaint.
+  managed 148 px, which was the "flippers are weak" complaint.
+- `mini_flipper_reach_test` rolls a ball onto the mini flipper and flips
+  at twelve different timings. At least three must touch valve 3.
+  Current: five, PASS. Before the fix in 0.3.0 none could.
 - `sump_bot_test` plays the sector with a bot that flips whenever the ball
-  is over a flipper. It prints when each valve was lit, whether the lift
-  was reached, drains and scrap. It is a smoke test. The bot is bad at
-  aiming, so it clears the sector in roughly one run in four within ten
-  simulated minutes. Set `TRACE` to true in the file to print ball
-  positions and find jams.
+  is over a flipper. It prints whether the ball escaped the table, when
+  each valve was lit, whether the lift was reached, drains, scrap, any
+  resting spots, and time per height band after the gate opens. The bot
+  cannot aim, so valve 3 is slow for it. Last 16 runs: 12 cleared within
+  ten simulated minutes, 0 escapes, 0 resting spots. Set `TRACE` to true
+  to print ball positions every 10 seconds. Runs are not deterministic,
+  so run several in parallel.
 
 ## 7. Gotchas already paid for
 
@@ -131,6 +136,13 @@ godot --headless --fixed-fps 60 --path . -s res://tests/sump_bot_test.gd
 - **Android export.** `--export-debug "Android"` fails with an empty
   "configuration errors" message in this environment. Use
   `tools/export_android.gd`, which calls the export platform directly.
+- **Moving bodies.** Do not set `sync_to_physics` on a body you move by
+  writing `position` in `_physics_process`. The drone did this and its
+  collision body desynced from its visible position, firing the ball
+  through the walls at max speed in a third of bot runs. `sector.gd` now
+  respawns any ball that leaves the sector, with no shield lost, and logs
+  a warning. The flippers use `sync_to_physics` with `rotation` and are
+  fine.
 - **Flipper strength.** An AnimatableBody2D flipper only passes on its
   surface speed, which is weak. `flipper.gd` adds one explicit kick per
   press along the flipper normal, scaled from `kick_base` to `kick_tip`.
@@ -154,9 +166,9 @@ godot --headless --fixed-fps 60 --path . -s res://tests/sump_bot_test.gd
    Ask about flipper strength, whether the climb reads, and whether drones
    deflecting the ball feels fair. The three open questions are at the
    end of docs/02.
-2. **Find resting spots.** In bot runs the ball sits idle for long
-   stretches until ball search frees it. Turn on `TRACE`, find where, and
-   slope or reshape those surfaces.
+2. **Resting spots: done in 0.3.0.** None found in 16 bot runs. The
+   "idle" stretches were the ball escaping the table (drone bug, fixed)
+   and valve 3 being unreachable (moved, mini flipper strengthened).
 3. **Upgrade screen.** On reaching the lift, pause and offer one of three
    power-ups. Start with six items, two per family, chosen from docs/03 to
    be as different as possible: Arc Ball, Splitter, Overclock, Mag Grip,
@@ -173,6 +185,15 @@ godot --headless --fixed-fps 60 --path . -s res://tests/sump_bot_test.gd
 6. **Hideout.** Scrap carries home. Two buildings to start.
 
 Sound stays out until Ashley asks for it.
+
+## 8a. Session log
+
+- 0.2.0: Sump grey box, flipper kick, handoff written.
+- 0.3.0: Fixed ball escaping through walls (drone `sync_to_physics`).
+  Mini flipper kick raised to 470/680. Valve 3 moved from (80, 100) to
+  (188, 100), where late flips from the mini flipper land. Valves
+  enlarged from radius 9 to 11. Added escape safety net and
+  `mini_flipper_reach_test`. Still waiting on Ashley's phone feedback.
 
 ## 9. Working rules
 

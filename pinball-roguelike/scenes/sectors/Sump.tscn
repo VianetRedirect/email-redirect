@@ -127,8 +127,8 @@ action = "flipper_right"
 [node name="FlipperMini" parent="." instance=ExtResource("3_flipper")]
 position = Vector2(70, 244)
 length = 20.0
-kick_base = 330.0
-kick_tip = 560.0
+kick_base = 470.0
+kick_tip = 680.0
 
 [node name="Bumpers" type="Node2D" parent="."]
 
@@ -161,7 +161,7 @@ position = Vector2(36, 400)
 position = Vector2(212, 440)
 
 [node name="Valve3" parent="Valves" instance=ExtResource("6_valve")]
-position = Vector2(80, 100)
+position = Vector2(188, 100)
 
 [node name="Drones" type="Node2D" parent="."]
 

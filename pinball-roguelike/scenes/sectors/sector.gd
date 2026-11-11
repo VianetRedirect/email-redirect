@@ -59,6 +59,7 @@ func _process(delta: float) -> void:
 	_update_camera(delta)
 	_update_hint()
 	_ball_search(delta)
+	_escape_check()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -126,6 +127,20 @@ func _ball_search(delta: float) -> void:
 	if _still_time >= stuck_seconds:
 		_still_time = 0.0
 		_ball.linear_velocity = Vector2(randf_range(-120, 120), -160)
+
+
+## Safety net. A ball outside the sector is a physics bug, not a player
+## mistake, so it respawns at the plunger with no shield lost.
+func _escape_check() -> void:
+	if not is_instance_valid(_ball):
+		return
+	var p := _ball.position
+	if p.x < -8.0 or p.x > 278.0 or p.y < -8.0 or p.y > sector_height + 8.0:
+		push_warning("Ball left the sector at %s, respawning" % str(p))
+		_ball.queue_free()
+		_ball = null
+		_release_all_touches()
+		_spawn_ball()
 
 
 func _handle_touch(event: InputEventScreenTouch) -> void:
