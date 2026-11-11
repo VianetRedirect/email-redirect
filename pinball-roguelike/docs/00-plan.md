@@ -24,3 +24,10 @@ Sound and the wider feature list start after Phase 5.
 - [ ] Add outlanes and decide whether they are too punishing at this size
 - [ ] Nudge via swipe, with a tilt penalty
 - [ ] Playtest with two other people for ten minutes each
+
+## Update: direction change
+
+After the first phone test the concept was reset. See
+`01-research-and-direction.md`, `02-run-rules-and-sector-one.md` and
+`03-power-ups.md`. The grey box was rebuilt as sector one, the Sump, with
+stronger flippers. `HANDOFF.md` lists what to build next.

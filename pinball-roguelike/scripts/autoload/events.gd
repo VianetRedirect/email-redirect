@@ -2,10 +2,14 @@
 ## to the other side. Keep the signal list small and name every argument.
 extends Node
 
-signal score_added(amount: int)
+signal scrap_added(amount: int)
 signal ball_launched
 signal ball_drained
-signal target_hit(target: Node2D, remaining_hp: int)
-signal target_destroyed(target: Node2D)
+signal node_lit(node: Node2D)
+signal gate_opened
+signal sector_cleared
+signal enemy_destroyed(enemy: Node2D)
+## -1 the objective is above the screen, 1 below, 0 visible.
+signal objective_hint(direction: int)
 signal run_started
-signal run_ended(score: int, run_time: float)
+signal run_ended(won: bool, scrap: int, run_time: float)

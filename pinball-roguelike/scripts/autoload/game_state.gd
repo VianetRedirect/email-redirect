@@ -1,21 +1,26 @@
-## Holds the state of the current run. Later this is also where meta
-## progression (currency carried home, unlocked characters) will live.
+## State of the current run: shield, scrap, objective progress and timer.
+## Later this is also where meta progression (scrap banked at the hideout,
+## unlocked crew) will live.
 extends Node
 
-signal score_changed(score: int)
-signal balls_changed(balls_left: int)
+signal shield_changed(shield: int)
+signal scrap_changed(scrap: int)
+signal nodes_changed(lit: int, total: int)
 signal time_changed(run_time: float)
 
-const STARTING_BALLS := 3
+const STARTING_SHIELD := 3
 
-var score := 0
-var balls_left := STARTING_BALLS
+var shield := STARTING_SHIELD
+var max_shield := STARTING_SHIELD
+var scrap := 0
+var nodes_lit := 0
+var nodes_total := 3
 var run_time := 0.0
 var run_active := false
 
 
 func _ready() -> void:
-	Events.score_added.connect(add_score)
+	Events.scrap_added.connect(add_scrap)
 
 
 func _process(delta: float) -> void:
@@ -25,33 +30,48 @@ func _process(delta: float) -> void:
 
 
 func start_run() -> void:
-	score = 0
-	balls_left = STARTING_BALLS
+	shield = STARTING_SHIELD
+	max_shield = STARTING_SHIELD
+	scrap = 0
 	run_time = 0.0
 	run_active = true
-	score_changed.emit(score)
-	balls_changed.emit(balls_left)
+	shield_changed.emit(shield)
+	scrap_changed.emit(scrap)
 	time_changed.emit(run_time)
 	Events.run_started.emit()
 
 
-func add_score(amount: int) -> void:
+func start_sector(total_nodes: int) -> void:
+	nodes_lit = 0
+	nodes_total = total_nodes
+	nodes_changed.emit(nodes_lit, nodes_total)
+
+
+func add_scrap(amount: int) -> void:
 	if not run_active:
 		return
-	score += amount
-	score_changed.emit(score)
+	scrap += amount
+	scrap_changed.emit(scrap)
 
 
-## Removes one ball. Returns true while the run can continue.
-func lose_ball() -> bool:
-	balls_left -= 1
-	balls_changed.emit(balls_left)
-	if balls_left <= 0:
-		end_run()
+## Returns true when every node in the sector is lit.
+func light_node() -> bool:
+	nodes_lit += 1
+	nodes_changed.emit(nodes_lit, nodes_total)
+	return nodes_lit >= nodes_total
+
+
+## Handles a drain. Returns true while the run continues. Only a drain at
+## zero shield ends the run.
+func take_drain() -> bool:
+	if shield <= 0:
+		end_run(false)
 		return false
+	shield -= 1
+	shield_changed.emit(shield)
 	return true
 
 
-func end_run() -> void:
+func end_run(won: bool) -> void:
 	run_active = false
-	Events.run_ended.emit(score, run_time)
+	Events.run_ended.emit(won, scrap, run_time)

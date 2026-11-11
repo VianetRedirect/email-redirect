@@ -1,15 +1,16 @@
 ## The ball. Caps its own speed so it never tunnels through a flipper, and
-## tells whatever it hits about the hit so bumpers and targets can react.
+## tells whatever it hits about the hit so bumpers, nodes and enemies react.
 class_name Ball
 extends RigidBody2D
 
-@export var max_speed := 850.0
+@export var max_speed := 950.0
 @export var radius := 4.0
 @export var damage := 1
 @export var color := Color(0.95, 0.95, 0.98)
 
 
 func _ready() -> void:
+	add_to_group("balls")
 	body_entered.connect(_on_body_entered)
 	queue_redraw()
 

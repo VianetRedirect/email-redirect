@@ -3,9 +3,12 @@
 A pinball game with roguelike runs and a base you build between them.
 Android first, portrait, pixel art. Built in Godot 4.4.
 
-This is the Phase 1 grey-box skeleton. There is no art, no sound and no
-progression yet. That is deliberate. The only job of this build is to answer
-one question: is flipping a ball around this table fun for ten minutes?
+This is a grey-box build of sector one, the Sump. There is no art, no sound
+and no power-ups yet. That is deliberate. Its job is to prove the climb:
+light three valves, open the lift, ride it out, without losing all your
+shield.
+
+New to the project? Read `HANDOFF.md` first.
 
 ## Opening the project
 
@@ -34,36 +37,18 @@ Touch, which is what the game is designed for:
 
 ## Folder map
 
-```
-project.godot            engine settings: resolution, physics rate, input map
-scenes/main/             Main.tscn, the entry point. Later routes base <-> run
-scenes/table/            everything on the play field
-  Table.tscn             the grey-box table layout. Edit walls and positions here
-  table.gd               plunger, touch input, ball spawning, drain handling
-  Ball.tscn / ball.gd    the ball. Speed cap and hit reporting live here
-  Flipper.tscn           one flipper, mirrored for the right side
-  Bumper.tscn            pop bumper
-  Slingshot.tscn         slingshot
-  Target.tscn            placeholder enemy with hit points
-  drain.gd               area under the flippers that eats the ball
-  greybox_body.gd        draws collision shapes as flat colour so no art is needed
-scenes/ui/               Hud.tscn: score, balls, run timer, run-over message
-scenes/base/             Base.tscn placeholder for Phase 3
-scripts/autoload/        Events (signal bus) and GameState (run state)
-assets/                  empty for now. sprites, fonts, sfx, music
-docs/                    design docs. Start with pitch-and-pillars.md
-```
+See `HANDOFF.md` section 4 for the full map and how the pieces talk.
 
-## How the pieces talk to each other
-
-- Nothing holds a reference to the HUD or to GameState from the table.
-  Table objects emit on `Events`, GameState listens and updates, the HUD
-  listens to GameState.
-- The ball calls `on_ball_hit(ball)` on anything it touches that has that
-  method. Bumpers, slingshots and targets implement it. New table objects
-  only need that one method.
-- Physics layers: 1 is walls and flippers, 2 is the ball, 4 is hittable
-  objects. The ball collides with 1 and 4.
+```
+scenes/sectors/Sump.tscn   sector one layout. Edit geometry here
+scenes/sectors/sector.gd   ball, plunger, input, camera, objective, drain rule
+scenes/table/              flipper, ball, bumper, slingshot, valve, drone, gate, lift
+scenes/ui/Hud.tscn         shield, scrap, valves, timer
+scripts/autoload/          Events (signal bus) and GameState (run state)
+tests/                     headless tests
+tools/                     build scripts
+docs/                      design documents
+```
 
 ## Tuning knobs
 
@@ -72,8 +57,11 @@ All in the inspector, no code needed:
 - `project.godot`: gravity (420) and physics ticks (120). Keep ticks at 120
   or higher or the ball tunnels through flippers at speed.
 - Ball: `max_speed`, `radius`, bounce and friction on the physics material.
-- Flipper: `rest_degrees`, `active_degrees`, `angular_speed`, `length`.
-- Table: `launch_min`, `launch_max`, `charge_time`.
+- Flipper: `kick_base` and `kick_tip` set shot strength. Also `rest_degrees`,
+  `active_degrees`, `angular_speed`, `length`.
+- Sector: `launch_min`, `launch_max`, `charge_time`, `camera_follow`,
+  `stuck_seconds`.
+- Drone: `speed`, `patrol_half_width`, `max_hp`, `deflect_speed`.
 - Bumper: `kick_speed`. Slingshot: `kick_speed`, `normal` and `scatter_degrees`.
 
 ## Android export
@@ -88,17 +76,13 @@ All in the inspector, no code needed:
 
 ### Building without a full Android SDK
 
-`tools/export_android.gd` exports an unsigned APK headless using only the
-export templates, then you sign it yourself:
-
 ```
-godot --headless --editor -s res://tools/export_android.gd --path .
-java -jar uber-apk-signer.jar --apks export/pinball-roguelike-unsigned.apk \
-  --ks debug.keystore --ksAlias androiddebugkey --ksPass android --ksKeyPass android \
-  --out export/
+tools/setup_build_env.sh   # once: Godot, export templates, signer
+tools/build_apk.sh         # tests, then export/pinball-roguelike-debug.apk
 ```
 
-The APK is arm64 only. Install it with "install from unknown sources" enabled.
+The APK is arm64 only and signed with the debug key in `tools/`. Install
+it with "install from unknown sources" enabled.
 
 ## Phase 1 exit gate
 

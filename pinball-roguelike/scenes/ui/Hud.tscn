@@ -5,13 +5,13 @@
 [node name="Hud" type="CanvasLayer"]
 script = ExtResource("1_hud")
 
-[node name="Score" type="Label" parent="."]
+[node name="Shield" type="Label" parent="."]
 offset_left = 8.0
 offset_top = 6.0
 offset_right = 90.0
 offset_bottom = 18.0
 theme_override_font_sizes/font_size = 10
-text = "000000"
+text = "SHIELD 3"
 
 [node name="Timer" type="Label" parent="."]
 offset_left = 110.0
@@ -22,14 +22,32 @@ theme_override_font_sizes/font_size = 10
 text = "00:00"
 horizontal_alignment = 1
 
-[node name="Balls" type="Label" parent="."]
-offset_left = 200.0
+[node name="Scrap" type="Label" parent="."]
+offset_left = 180.0
 offset_top = 6.0
 offset_right = 262.0
 offset_bottom = 18.0
 theme_override_font_sizes/font_size = 10
-text = "BALLS 3"
+text = "SCRAP 0"
 horizontal_alignment = 2
+
+[node name="Nodes" type="Label" parent="."]
+offset_left = 8.0
+offset_top = 19.0
+offset_right = 120.0
+offset_bottom = 31.0
+theme_override_font_sizes/font_size = 10
+text = "VALVES 0/3"
+
+[node name="Hint" type="Label" parent="."]
+visible = false
+offset_left = 85.0
+offset_top = 34.0
+offset_right = 185.0
+offset_bottom = 46.0
+theme_override_font_sizes/font_size = 10
+text = "^ VALVE ^"
+horizontal_alignment = 1
 
 [node name="Message" type="Label" parent="."]
 visible = false
