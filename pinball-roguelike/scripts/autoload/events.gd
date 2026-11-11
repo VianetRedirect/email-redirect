@@ -18,6 +18,8 @@ signal item_picked(item: ItemData)
 signal insurance_used
 ## Every target in a drop target bank is down.
 signal bank_completed
+## A standup or rollover bank is complete. bank_id names which one.
+signal bank_done(bank_id: StringName)
 ## Short message for the HUD, such as "KICKBACK".
 signal toast(text: String)
 signal run_started

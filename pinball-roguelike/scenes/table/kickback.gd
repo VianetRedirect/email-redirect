@@ -1,16 +1,21 @@
 ## Kickback at the bottom of an outlane. While lit, a ball that reaches it
 ## is fired straight back up the lane into play, and the kickback goes
-## dark. Completing a drop target bank relights it. A dark kickback lets
-## the ball drain.
+## dark. Completing the bank named in relight_bank relights it: &"drop"
+## for the drop target bank, or a TargetBank id such as &"lanes_low". A
+## dark kickback lets the ball drain.
 extends Area2D
 
 @export var kick_velocity := Vector2(25, -850)
 @export var lit := true
+@export var relight_bank := &"lanes_low"
 
 
 func _ready() -> void:
 	body_entered.connect(_on_body_entered)
-	Events.bank_completed.connect(relight)
+	if relight_bank == &"drop":
+		Events.bank_completed.connect(relight)
+	else:
+		Events.bank_done.connect(func(id): if id == relight_bank: relight())
 	queue_redraw()
 
 

@@ -28,7 +28,7 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 
-func on_ball_hit(_ball: Ball) -> void:
+func on_ball_hit(_ball) -> void:
 	flash()
 	if lit:
 		return

@@ -98,7 +98,9 @@ func _process(delta: float) -> bool:
 		if ball.freeze or ball.linear_velocity.y < -40.0:
 			continue
 		for f in get_nodes_in_group("flippers"):
-			if f._contact_fraction(ball) >= 0.0:
+			# Let the ball roll onto the bat before flipping, as a player
+			# would. Flipping at the pivot just pops it straight up.
+			if f._contact_fraction(ball) >= 0.3:
 				any_over = true
 	_max_clones = maxi(_max_clones, clones)
 	if is_instance_valid(b):

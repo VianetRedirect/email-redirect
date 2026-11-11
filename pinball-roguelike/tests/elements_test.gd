@@ -74,7 +74,7 @@ func _process(delta: float) -> bool:
 		_wait -= delta
 		return false
 	var s := _s()
-	if _step > 30:
+	if _step > 40:
 		return true
 	match _step:
 		0:
@@ -119,6 +119,7 @@ func _process(delta: float) -> bool:
 			_wait = 0.2
 		7:
 			_drained = 0
+			s.get_node("KickbackRight").lit = false
 			_new_ball(Vector2(236, 510))
 			_wait = 1.5
 		8:
@@ -128,13 +129,14 @@ func _process(delta: float) -> bool:
 			# Drop bank: all three down re-arms both outlane saves, then resets.
 			_banks = 0
 			_scrap0 = _state.scrap
+			s.get_node("KickbackRight").lit = false
 			_new_ball(Vector2(120, 400))
 			_ball.freeze = true
 			for t in s.get_node("DropBank").get_children():
 				t.on_ball_hit(_ball)
 			_wait = 0.2
 		10:
-			var kb: Node = s.get_node("Kickback")
+			var kb: Node = s.get_node("KickbackRight")
 			var g: Node = s.get_node("OutlaneGateRight")
 			var all_down := true
 			for t in s.get_node("DropBank").get_children():
@@ -150,16 +152,16 @@ func _process(delta: float) -> bool:
 					up = false
 			_check("bank_resets", up)
 			# Ramp: a strong shot rides the rail to the upper level.
-			var dir := (Vector2(196, 340) - Vector2(160, 490)).normalized()
-			_new_ball(Vector2(161, 486), dir * 650.0)
+			var dir := (Vector2(196, 300) - Vector2(166, 430)).normalized()
+			_new_ball(Vector2(167, 426), dir * 650.0)
 			_wait = 2.2
 		12:
-			_check("strong_ramp_shot_reaches_upper_level", _bpos().y < 250.0 and _bpos().x > 170.0 and not _ball.freeze, "pos=%s" % str(_bpos().round()))
-			var dir := (Vector2(196, 340) - Vector2(160, 490)).normalized()
-			_new_ball(Vector2(161, 486), dir * 330.0)
+			_check("strong_ramp_shot_reaches_upper_level", _bpos().y < 250.0 and _bpos().x > 124.0 and not _ball.freeze, "pos=%s" % str(_bpos().round()))
+			var dir := (Vector2(196, 300) - Vector2(166, 430)).normalized()
+			_new_ball(Vector2(167, 426), dir * 300.0)
 			_wait = 2.5
 		13:
-			_check("weak_ramp_shot_rolls_back", _min_y > 345.0 and _bpos().y > 480.0, "min_y=%.0f pos=%s" % [_min_y, str(_bpos().round())])
+			_check("weak_ramp_shot_rolls_back", _min_y > 305.0 and _bpos().y > 430.0, "min_y=%.0f pos=%s" % [_min_y, str(_bpos().round())])
 			# Saucer: holds a slow ball, pays, kicks it out.
 			_scrap0 = _state.scrap
 			var sc: Node2D = s.get_node("Saucer")
@@ -198,6 +200,64 @@ func _process(delta: float) -> bool:
 			var v := _bvel()
 			_check("base_shot_goes_up_its_own_side", v.y < -400.0 and v.x < 60.0, "v=%s" % str(v.round()))
 			Input.action_release("flipper_left")
+			# Left ramp, the mirror of the right one, fed by the right flipper.
+			var dir := (Vector2(52, 300) - Vector2(82, 430)).normalized()
+			_new_ball(Vector2(81, 426), dir * 650.0)
+			_wait = 2.2
+		22:
+			_check("left_ramp_reaches_upper_level", _bpos().y < 250.0 and _bpos().x < 124.0 and not _ball.freeze, "pos=%s" % str(_bpos().round()))
+			# Slingshot kicks like a bumper: a slow ball leaves fast.
+			var sl: Node2D = s.get_node("Slingshots/SlingshotLeft")
+			_new_ball(sl.position + Vector2(18, 30), Vector2(-60, 0))
+			_wait = 0.25
+		23:
+			_check("slingshot_kicks_hard", _bvel().length() > 350.0 or _bpos().distance_to(s.get_node("Slingshots/SlingshotLeft").position + Vector2(18, 30)) > 70.0, "v=%s" % str(_bvel().round()))
+			# Standup bank: three hits light a valve.
+			_scrap0 = _state.scrap
+			for v in s.get_node("Valves").get_children():
+				v.lit = false
+			_state.start_sector(3)
+			_new_ball(Vector2(120, 600))
+			_ball.freeze = true
+			for t in s.get_node("Standups").get_children():
+				t.on_ball_hit(_ball)
+			_wait = 0.1
+		24:
+			var lit := 0
+			for v in s.get_node("Valves").get_children():
+				if v.lit:
+					lit += 1
+			_check("standups_open_a_valve", lit == 1 and _state.nodes_lit == 1, "lit=%d" % lit)
+			# Lane change: the flipper shifts the lit lane.
+			var lanes := s.get_node("LanesLow").get_children()
+			for l in lanes:
+				l.set_lit(false)
+			lanes[0].set_lit(true)
+			Input.action_press("flipper_right")
+			_wait = 0.05
+		25:
+			Input.action_release("flipper_right")
+			var lanes := s.get_node("LanesLow").get_children()
+			_check("lane_change_moves_light", lanes[1].lit and not lanes[0].lit, "lit=%s" % str(lanes.map(func(l): return l.lit)))
+			# Completing the inlane/outlane rollovers relights the kickback.
+			var kb: Node = s.get_node("Kickback")
+			kb.lit = false
+			for l in lanes:
+				l.set_lit(false)
+			_new_ball(Vector2(120, 600))
+			_ball.freeze = true
+			for l in lanes:
+				l._on_body_entered(_ball)
+			_wait = 0.1
+		26:
+			_check("lanes_relight_kickback", s.get_node("Kickback").lit)
+			# Top lanes make the bumpers super.
+			var top := s.get_node("LanesTop").get_children()
+			for l in top:
+				l._on_body_entered(_ball)
+			_wait = 0.1
+		27:
+			_check("top_lanes_make_super_bumpers", s.get_node("Bumpers/Bumper1")._super > 0.0)
 		_:
 			print("RESULT elements checks=%d fails=%d %s" % [_checks, _fails, "PASS" if _fails == 0 else "FAIL"])
 			return true

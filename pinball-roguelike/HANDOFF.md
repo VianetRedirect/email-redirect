@@ -48,12 +48,19 @@ A grey-box run loop. The Sump is the only sector, so it repeats as
 sector 2, 3 and onward until Night Market exists. Six power-ups work. No
 art, no sound, no hideout.
 
-The Sump has two levels joined by a ramp. Lower level: flippers,
-slingshots, inlanes, outlanes with gates, a left kickback, a three-target
-drop bank, valves 1 and 2, a patrol drone, the ramp. Upper level: two
-upper flippers on ledges, three pop bumpers, a saucer, valve 3, a drone,
-the gate and lift. A spinner hangs in the gap between the upper flippers.
-docs/04-table-elements.md explains each part.
+The Sump has two levels joined by two ramps, laid out as a fan of shots.
+Lower level: flippers, slingshots, inlane and outlane rollovers with lane
+change, outlanes with gates and a kickback on each side, lane guards, a
+centre drop bank with valve 1 behind it, a left lane with a spinner and
+three standups, a right lane with a spinner and valve 2, two ramps with
+wire rails, and a patrol drone. Upper level: two upper flippers, three
+pop bumpers, three top lanes with lane change, a saucer, valve 3, a drone,
+the gate and lift. Arrow inserts mark every shot. docs/04 explains each
+part and the layout rules.
+
+**The layout is generated.** Edit `tools/gen_sump.py` and run
+`python3 tools/gen_sump.py`; do not hand-edit Sump.tscn. The script
+mirrors the left half onto the right about x = 124.
 
 ```
 scenes/main/Main.tscn          run manager: Sector, Hud, UpgradeScreen
@@ -70,9 +77,16 @@ scenes/table/                  reusable pieces
   drone.gd / Drone.tscn        patrol enemy, take_damage(), hit cooldown
   bumper.gd                    pop bumper: skirt zone throws the ball
   drop_target.gd, drop_bank.gd bank of three, rearms outlane saves
-  kickback.gd                  left outlane save, single use until relit
+  kickback.gd                  outlane save, single use until its bank
+                               relights it (relight_bank)
   outlane_gate.gd              diverting gate, closed on launch and bank
-  rail.gd                      ramp-top catch and wire rail ride
+  rail.gd                      ramp-top catch and wire rail ride; keeps
+                               the ball's speed and accelerates
+  standup.gd, rollover.gd      lit-when-hit targets and lane switches
+  target_bank.gd               bank of standups or rollovers; lane change
+  insert.gd                    lit arrow inserts, visual only
+  table_rules.gd               standups complete -> open a valve
+  Post.tscn                    rubber post
   saucer.gd                    kickout hole
   spinner.gd                   spins by ball speed, pays per half turn
   slingshot, valve, gate, lift, drain, arc_flash
@@ -153,18 +167,19 @@ godot --headless --fixed-fps 60 --path . -s res://tests/<name>.gd
 | `flipper_power_test` | A flip from four points on the flipper would climb at least 430 px | 452 to 560 px, PASS |
 | `drone_top_test` | A ball landing on a drone costs it at most 1 hit point and slides off | 1 each, PASS. The old drone lost all 3 |
 | `items_test` | Each item's effect, slot limits, offers, and the lift-to-next-sector flow | 19 of 19, PASS |
-| `elements_test` | Each table part behaves like the real mechanism: bumper throw, kickback, gates, drop bank, ramp make and roll-back, saucer, spinner, flipper aim | 16 of 16, PASS |
-| `shot_map_test` | Every target can be reached from a named flipper. Prints the map | 8 of 8, PASS |
+| `elements_test` | Each table part behaves like the real mechanism: bumper and slingshot throws, kickbacks, gates, drop bank, both ramps, saucer, spinner, flipper aim, standups, lane change, bank rules | 22 of 22, PASS |
+| `shot_map_test` | Every one of 13 targets can be reached from a named flipper, with the drop bank up and down. Prints the map | 13 of 13, PASS |
 | `sump_bot_test` | A full run with a bot that flips blindly and picks random upgrades, up to 3 sectors | See below |
 
 `sump_bot_test` prints sectors cleared and when, items picked, escapes,
 drains split by centre, left outlane and right outlane, shield, clones
 and resting spots. It is not deterministic, so run several in parallel.
-Last 12 runs on the 0.5.0 table: 2 cleared sector one, 10 lost all
-shield, 0 escapes, 0 resting spots, 0 errors. Drains: 18 centre, 11 left
-outlane, 22 right outlane. The bot flips blindly and cannot make the
-ramp-then-upper-flipper climb on purpose, so it is a bug finder, not a
-difficulty measure.
+The bot waits until the ball is 30% along a bat before flipping; flipping
+at the pivot popped balls straight up in an endless loop on the upper
+ledge. Last 12 runs on 0.6.0: 0 escapes, 0 resting spots, 0 errors.
+Earlier 12 on near-final 0.6.0: drains 28 centre, 6 left outlane, 15
+right outlane; 1 run cleared sector one; balls last about a minute. The
+bot flips blindly, so it is a bug finder, not a difficulty measure.
 
 **Screenshots without a phone.** The container has a virtual display:
 
@@ -227,6 +242,13 @@ to check layout and readability. Extend the script for new screens.
 - **Wedges between a round target and a wall.** A ball rested between
   valve 2 and the plunger wall. Leave at least 13 px (ball plus 3) or
   zero, never a gap smaller than the ball.
+- **Shot lines must stay clear.** In 0.6.0 the ramp mouths and their
+  flares formed a wall across the table and most shots died on it, and a
+  post and valve 2 sat on the side-lane shot line. Run `shot_map_test`
+  after every layout change and read the MAP lines, not just PASS.
+- **Network.** WebFetch could not reach some hosts even after Ashley
+  widened network access, but `curl` could. Fetch with curl into the
+  scratchpad if the fetch tool fails.
 - **Shot map randomness.** Pop bumper scatter is random, so
   `shot_map_test` seeds the generator. If a layout change makes a reach
   check flip between runs, the shot is marginal: move the target.
@@ -235,22 +257,19 @@ to check layout and readability. Extend the script for new screens.
 
 ## 8. What to build next, in order
 
-1. **Difficulty check by a person.** The 0.5.0 Sump is much harder for
-   the bot than 0.4.0. Ask Ashley to play it on a laptop or phone and
-   say whether ball time and the climb feel fair. Tuning knobs: outlane
-   gate `closed_seconds`, ramp gravity in `RampZone`, flipper tip gap
-   (pivots at x 78 and 170), kickback relight rule.
-2. **Second ramp.** Some targets are reachable from one flipper only (see
-   the shot map in docs/04). A left ramp fed by the right flipper would
-   balance the table, as in most two-ramp fan layouts.
+1. **Ashley plays 0.6.0.** Ask about ramp feel, the side lanes, the busier
+   board and difficulty. Tuning knobs: ramp gravity in `gen_sump.py`
+   (`gravity="250.0"`), slingshot `kick_speed`, outlane gate
+   `closed_seconds`, kickback relight banks.
+2. **Rubber round the pop bumpers.** Mission Pinball's guide: surround
+   bumpers with rubber and give them a defined exit. Ours sit in the
+   open.
 3. **Sector two, Night Market, and the real fall rule.** A drain in
    sector two drops the ball into the Sump's catch lane, and the open
    lift becomes a launch tube back up (docs/02). `main.gd` already loads
    sectors by depth from `SECTOR_SCENES`. The drain rule is isolated in
-   `sector.gd` `_on_ball_drained`. Use docs/04's references for its
-   layout: Twilight Zone or Medieval Madness style.
-4. **More items.** Grow from 6 toward the 30 in docs/03, a few per
-   family at a time, keeping every tag present in every family.
+   `sector.gd` `_on_ball_drained`. Write a generator like gen_sump.py.
+4. **More items.** Grow from 6 toward the 30 in docs/03.
 5. **Art pass on the Sump** once layout stops changing.
 6. **Hideout.** Scrap carries home. Two buildings to start.
 
@@ -287,6 +306,17 @@ Sound stays out until Ashley asks for it.
   Flipper aim now follows real bats: tip across, base up its own side.
   Added `elements_test` and `shot_map_test`; removed
   `mini_flipper_reach_test`.
+- Feedback on 0.5.0: upper flippers small with a huge gap. Ramp hard to
+  hit and the ball should flow like a real ball. Slingshots should kick
+  like bumpers. Add a second ramp. Board too empty; research real layouts
+  (links in docs/04 sources).
+- 0.6.0: Layout now generated by tools/gen_sump.py. Second ramp. Ramps
+  moved up, wider (27 px), lower gravity, rail keeps ball speed. Upper
+  flippers 24 to 32 px, gap 66 to 20 px. Slingshots throw at 470 px/s.
+  Added standups, inlane/outlane rollovers and top lanes with lane
+  change, side-lane spinners, right kickback, lane guards, rubber posts,
+  arrow inserts, table rules, super bumpers. Valves moved: 1 behind the
+  drop bank, 2 at the top of the right lane, 3 under the upper drone.
 
 ## 9. Working rules
 

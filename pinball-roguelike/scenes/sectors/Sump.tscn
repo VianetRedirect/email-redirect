@@ -1,46 +1,61 @@
-[gd_scene load_steps=28 format=3]
+[gd_scene load_steps=34 format=3]
 
-[ext_resource type="Script" path="res://scenes/sectors/sector.gd" id="1_sector"]
-[ext_resource type="Script" path="res://scenes/table/greybox_body.gd" id="2_walls"]
-[ext_resource type="PackedScene" path="res://scenes/table/Flipper.tscn" id="3_flipper"]
-[ext_resource type="PackedScene" path="res://scenes/table/Bumper.tscn" id="4_bumper"]
-[ext_resource type="PackedScene" path="res://scenes/table/Slingshot.tscn" id="5_sling"]
-[ext_resource type="PackedScene" path="res://scenes/table/Valve.tscn" id="6_valve"]
-[ext_resource type="Script" path="res://scenes/table/drain.gd" id="7_drain"]
-[ext_resource type="PackedScene" path="res://scenes/table/Drone.tscn" id="8_drone"]
-[ext_resource type="Script" path="res://scenes/table/gate.gd" id="9_gate"]
-[ext_resource type="Script" path="res://scenes/table/lift.gd" id="10_lift"]
-[ext_resource type="Script" path="res://scenes/table/spinner.gd" id="11_spinner"]
-[ext_resource type="PackedScene" path="res://scenes/table/DropTarget.tscn" id="12_dt"]
-[ext_resource type="Script" path="res://scenes/table/drop_bank.gd" id="13_bank"]
-[ext_resource type="Script" path="res://scenes/table/kickback.gd" id="14_kick"]
-[ext_resource type="Script" path="res://scenes/table/outlane_gate.gd" id="15_ogate"]
-[ext_resource type="Script" path="res://scenes/table/rail.gd" id="16_rail"]
-[ext_resource type="Script" path="res://scenes/table/saucer.gd" id="17_saucer"]
+[ext_resource type="Script" path="res://scenes/sectors/sector.gd" id="1_r"]
+[ext_resource type="Script" path="res://scenes/table/greybox_body.gd" id="2_r"]
+[ext_resource type="PackedScene" path="res://scenes/table/Flipper.tscn" id="3_r"]
+[ext_resource type="PackedScene" path="res://scenes/table/Bumper.tscn" id="4_r"]
+[ext_resource type="PackedScene" path="res://scenes/table/Slingshot.tscn" id="5_r"]
+[ext_resource type="PackedScene" path="res://scenes/table/Valve.tscn" id="6_r"]
+[ext_resource type="Script" path="res://scenes/table/drain.gd" id="7_r"]
+[ext_resource type="PackedScene" path="res://scenes/table/Drone.tscn" id="8_r"]
+[ext_resource type="Script" path="res://scenes/table/gate.gd" id="9_r"]
+[ext_resource type="Script" path="res://scenes/table/lift.gd" id="10_r"]
+[ext_resource type="Script" path="res://scenes/table/spinner.gd" id="11_r"]
+[ext_resource type="PackedScene" path="res://scenes/table/DropTarget.tscn" id="12_r"]
+[ext_resource type="Script" path="res://scenes/table/drop_bank.gd" id="13_r"]
+[ext_resource type="Script" path="res://scenes/table/kickback.gd" id="14_r"]
+[ext_resource type="Script" path="res://scenes/table/outlane_gate.gd" id="15_r"]
+[ext_resource type="Script" path="res://scenes/table/rail.gd" id="16_r"]
+[ext_resource type="Script" path="res://scenes/table/saucer.gd" id="17_r"]
+[ext_resource type="PackedScene" path="res://scenes/table/Standup.tscn" id="18_r"]
+[ext_resource type="PackedScene" path="res://scenes/table/Rollover.tscn" id="19_r"]
+[ext_resource type="Script" path="res://scenes/table/target_bank.gd" id="20_r"]
+[ext_resource type="Script" path="res://scenes/table/insert.gd" id="21_r"]
+[ext_resource type="PackedScene" path="res://scenes/table/Post.tscn" id="22_r"]
+[ext_resource type="Script" path="res://scenes/table/table_rules.gd" id="23_r"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_drain"]
+[sub_resource type="RectangleShape2D" id="drain"]
 size = Vector2(240, 8)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_gate"]
+[sub_resource type="RectangleShape2D" id="gate"]
 size = Vector2(60, 6)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_lift"]
+[sub_resource type="RectangleShape2D" id="lift"]
 size = Vector2(60, 22)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_spinner"]
-size = Vector2(50, 6)
+[sub_resource type="RectangleShape2D" id="spin_mid"]
+size = Vector2(20, 6)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_kick"]
+[sub_resource type="RectangleShape2D" id="spin_side"]
+size = Vector2(30, 6)
+
+[sub_resource type="RectangleShape2D" id="kick"]
 size = Vector2(16, 8)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_railtop"]
-size = Vector2(18, 10)
+[sub_resource type="RectangleShape2D" id="railtop"]
+size = Vector2(26, 10)
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_saucer"]
+[sub_resource type="CircleShape2D" id="saucer"]
 radius = 5.0
 
+[sub_resource type="ConvexPolygonShape2D" id="rampzone_r"]
+points = PackedVector2Array(152.5, 430, 179.5, 430, 209.5, 300, 182.5, 300)
+
+[sub_resource type="ConvexPolygonShape2D" id="rampzone_l"]
+points = PackedVector2Array(65.5, 300, 38.5, 300, 68.5, 430, 95.5, 430)
+
 [node name="Sump" type="Node2D"]
-script = ExtResource("1_sector")
+script = ExtResource("1_r")
 
 [node name="Background" type="ColorRect" parent="."]
 offset_right = 270.0
@@ -56,9 +71,13 @@ offset_bottom = 30.0
 mouse_filter = 2
 color = Color(0.2, 0.5, 0.3, 1)
 
-[node name="RampFloor" type="Polygon2D" parent="."]
+[node name="RampFloorRight" type="Polygon2D" parent="."]
 color = Color(0.13, 0.19, 0.24, 1)
-polygon = PackedVector2Array(150, 490, 171, 490, 207, 340, 186, 340)
+polygon = PackedVector2Array(152.5, 430, 179.5, 430, 209.5, 300, 182.5, 300)
+
+[node name="RampFloorLeft" type="Polygon2D" parent="."]
+color = Color(0.13, 0.19, 0.24, 1)
+polygon = PackedVector2Array(95.5, 430, 68.5, 430, 38.5, 300, 65.5, 300)
 
 [node name="Camera" type="Camera2D" parent="."]
 position = Vector2(135, 480)
@@ -66,7 +85,7 @@ position = Vector2(135, 480)
 [node name="Walls" type="StaticBody2D" parent="."]
 collision_layer = 1
 collision_mask = 0
-script = ExtResource("2_walls")
+script = ExtResource("2_r")
 color = Color(0.28, 0.34, 0.33, 1)
 
 [node name="Left" type="CollisionPolygon2D" parent="Walls"]
@@ -88,10 +107,10 @@ polygon = PackedVector2Array(4, 4, 105, 4, 105, 36, 4, 84)
 polygon = PackedVector2Array(266, 4, 266, 84, 165, 36, 165, 4)
 
 [node name="LeftLedge" type="CollisionPolygon2D" parent="Walls"]
-polygon = PackedVector2Array(4, 222, 70, 240, 70, 250, 4, 250)
+polygon = PackedVector2Array(4, 222, 85, 240, 85, 250, 4, 250)
 
 [node name="RightLedgeArc" type="CollisionPolygon2D" parent="Walls"]
-polygon = PackedVector2Array(180, 240, 266, 222, 266, 336, 263.1, 313.7, 254.5, 293, 240.8, 275.2, 223, 261.5, 202.3, 252.9, 180, 250)
+polygon = PackedVector2Array(163, 240, 266, 222, 266, 336, 263.1, 313.7, 254.5, 293, 240.8, 275.2, 223, 261.5, 202.3, 252.9, 180, 250, 163, 250)
 
 [node name="PlungerDivider" type="CollisionPolygon2D" parent="Walls"]
 polygon = PackedVector2Array(244, 350, 248, 336, 248, 720, 244, 720)
@@ -99,99 +118,189 @@ polygon = PackedVector2Array(244, 350, 248, 336, 248, 720, 244, 720)
 [node name="LeftLaneGuide" type="CollisionPolygon2D" parent="Walls"]
 polygon = PackedVector2Array(22, 566, 24, 556, 26, 566, 26, 612, 78, 658, 78, 720, 22, 720)
 
-[node name="RightLaneGuide" type="CollisionPolygon2D" parent="Walls"]
-polygon = PackedVector2Array(226, 566, 224, 556, 222, 566, 222, 612, 170, 658, 170, 720, 226, 720)
-
 [node name="LeftSlingBase" type="CollisionPolygon2D" parent="Walls"]
 polygon = PackedVector2Array(44, 524, 44, 600, 72, 622)
+
+[node name="LeftOutlaneGuard" type="CollisionPolygon2D" parent="Walls"]
+polygon = PackedVector2Array(4, 470, 22, 498, 4, 505)
+
+[node name="RightLaneGuide" type="CollisionPolygon2D" parent="Walls"]
+polygon = PackedVector2Array(226, 566, 224, 556, 222, 566, 222, 612, 170, 658, 170, 720, 226, 720)
 
 [node name="RightSlingBase" type="CollisionPolygon2D" parent="Walls"]
 polygon = PackedVector2Array(204, 524, 204, 600, 176, 622)
 
-[node name="RampWallLeft" type="CollisionPolygon2D" parent="Walls"]
-polygon = PackedVector2Array(147, 490, 150, 490, 186, 340, 183, 340)
+[node name="RightOutlaneGuard" type="CollisionPolygon2D" parent="Walls"]
+polygon = PackedVector2Array(244, 470, 226, 498, 244, 505)
 
-[node name="RampWallRight" type="CollisionPolygon2D" parent="Walls"]
-polygon = PackedVector2Array(171, 490, 174, 490, 210, 340, 207, 340)
+[node name="RampRWallIn" type="CollisionPolygon2D" parent="Walls"]
+polygon = PackedVector2Array(149.5, 430, 152.5, 430, 182.5, 300, 179.5, 300)
 
-[node name="RampFlareLeft" type="CollisionPolygon2D" parent="Walls"]
-polygon = PackedVector2Array(137, 505, 140, 507, 150, 491, 147, 489)
+[node name="RampLWallIn" type="CollisionPolygon2D" parent="Walls"]
+polygon = PackedVector2Array(98.5, 430, 95.5, 430, 65.5, 300, 68.5, 300)
 
-[node name="RampFlareRight" type="CollisionPolygon2D" parent="Walls"]
-polygon = PackedVector2Array(174, 489, 171, 491, 181, 507, 184, 505)
+[node name="RampRWallOut" type="CollisionPolygon2D" parent="Walls"]
+polygon = PackedVector2Array(179.5, 430, 182.5, 430, 212.5, 300, 209.5, 300)
 
-[node name="RampRoof" type="CollisionPolygon2D" parent="Walls"]
-polygon = PackedVector2Array(181, 340, 196, 328, 212, 340)
+[node name="RampLWallOut" type="CollisionPolygon2D" parent="Walls"]
+polygon = PackedVector2Array(68.5, 430, 65.5, 430, 35.5, 300, 38.5, 300)
+
+[node name="RampRFlareIn" type="CollisionPolygon2D" parent="Walls"]
+polygon = PackedVector2Array(141.5, 440, 144, 442, 152.5, 431, 149.5, 429)
+
+[node name="RampLFlareIn" type="CollisionPolygon2D" parent="Walls"]
+polygon = PackedVector2Array(106.5, 440, 104, 442, 95.5, 431, 98.5, 429)
+
+[node name="RampRRoof" type="CollisionPolygon2D" parent="Walls"]
+polygon = PackedVector2Array(177, 300, 196, 286, 215, 300)
+
+[node name="RampLRoof" type="CollisionPolygon2D" parent="Walls"]
+polygon = PackedVector2Array(71, 300, 52, 286, 33, 300)
+
+[node name="LaneGuide207" type="CollisionPolygon2D" parent="Walls"]
+polygon = PackedVector2Array(205.5, 90, 207, 84, 208.5, 90, 208.5, 112, 205.5, 112)
+
+[node name="LaneGuide229" type="CollisionPolygon2D" parent="Walls"]
+polygon = PackedVector2Array(227.5, 90, 229, 84, 230.5, 90, 230.5, 112, 227.5, 112)
+
+[node name="Posts" type="Node2D" parent="."]
+
+[node name="Post1" parent="Posts" instance=ExtResource("22_r")]
+position = Vector2(141, 443)
+
+[node name="Post2" parent="Posts" instance=ExtResource("22_r")]
+position = Vector2(88, 370)
+
+[node name="Post3" parent="Posts" instance=ExtResource("22_r")]
+position = Vector2(160, 370)
+
+[node name="Post4" parent="Posts" instance=ExtResource("22_r")]
+position = Vector2(107, 443)
 
 [node name="Gate" type="StaticBody2D" parent="."]
 position = Vector2(135, 33)
 collision_layer = 1
 collision_mask = 0
-script = ExtResource("9_gate")
+script = ExtResource("9_r")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Gate"]
-shape = SubResource("RectangleShape2D_gate")
+shape = SubResource("gate")
 
 [node name="Lift" type="Area2D" parent="."]
 position = Vector2(135, 16)
 collision_layer = 0
 collision_mask = 2
-script = ExtResource("10_lift")
+script = ExtResource("10_r")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Lift"]
-shape = SubResource("RectangleShape2D_lift")
+shape = SubResource("lift")
 
 [node name="Spinner" type="Area2D" parent="."]
-position = Vector2(125, 264)
+position = Vector2(124, 264)
 collision_layer = 0
 collision_mask = 2
-script = ExtResource("11_spinner")
+script = ExtResource("11_r")
+half_width = 10.0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Spinner"]
-shape = SubResource("RectangleShape2D_spinner")
+shape = SubResource("spin_mid")
 
-[node name="RampZone" type="Area2D" parent="."]
+[node name="SpinnerLeft" type="Area2D" parent="."]
+position = Vector2(22, 385)
+collision_layer = 0
+collision_mask = 2
+script = ExtResource("11_r")
+half_width = 15.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="SpinnerLeft"]
+shape = SubResource("spin_side")
+
+[node name="SpinnerRight" type="Area2D" parent="."]
+position = Vector2(226, 385)
+collision_layer = 0
+collision_mask = 2
+script = ExtResource("11_r")
+half_width = 15.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="SpinnerRight"]
+shape = SubResource("spin_side")
+
+[node name="RampZoneRight" type="Area2D" parent="."]
 collision_layer = 0
 collision_mask = 2
 gravity_space_override = 1
 gravity_direction = Vector2(0, 1)
-gravity = 450.0
+gravity = 250.0
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="RampZone"]
-polygon = PackedVector2Array(150, 490, 171, 490, 207, 340, 186, 340)
+[node name="CollisionShape2D" type="CollisionShape2D" parent="RampZoneRight"]
+shape = SubResource("rampzone_r")
 
-[node name="Rail" type="Area2D" parent="."]
-position = Vector2(196, 348)
+[node name="RampZoneLeft" type="Area2D" parent="."]
 collision_layer = 0
 collision_mask = 2
-script = ExtResource("16_rail")
-points = PackedVector2Array(0, -3, 3, -48, 18, -86, 38, -120, 48, -143)
+gravity_space_override = 1
+gravity_direction = Vector2(0, 1)
+gravity = 250.0
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Rail"]
-shape = SubResource("RectangleShape2D_railtop")
+[node name="CollisionShape2D" type="CollisionShape2D" parent="RampZoneLeft"]
+shape = SubResource("rampzone_l")
+
+[node name="RailRight" type="Area2D" parent="."]
+position = Vector2(196, 308)
+collision_layer = 0
+collision_mask = 2
+script = ExtResource("16_r")
+points = PackedVector2Array(0, -3, 8, -38, 26, -72, 47.5, -103)
+exit_velocity = Vector2(-30, 20)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="RailRight"]
+shape = SubResource("railtop")
+
+[node name="RailLeft" type="Area2D" parent="."]
+position = Vector2(52, 308)
+collision_layer = 0
+collision_mask = 2
+script = ExtResource("16_r")
+points = PackedVector2Array(0, -3, -8, -38, -26, -72, -40, -105)
+exit_velocity = Vector2(30, 20)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="RailLeft"]
+shape = SubResource("railtop")
 
 [node name="Saucer" type="Area2D" parent="."]
 position = Vector2(40, 200)
 collision_layer = 0
 collision_mask = 2
-script = ExtResource("17_saucer")
+script = ExtResource("17_r")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Saucer"]
-shape = SubResource("CircleShape2D_saucer")
+shape = SubResource("saucer")
 
 [node name="Kickback" type="Area2D" parent="."]
 position = Vector2(13, 690)
 collision_layer = 0
 collision_mask = 2
-script = ExtResource("14_kick")
+script = ExtResource("14_r")
+relight_bank = &"lanes_low"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Kickback"]
-shape = SubResource("RectangleShape2D_kick")
+shape = SubResource("kick")
+
+[node name="KickbackRight" type="Area2D" parent="."]
+position = Vector2(235, 690)
+collision_layer = 0
+collision_mask = 2
+script = ExtResource("14_r")
+relight_bank = &"drop"
+kick_velocity = Vector2(-25, -850)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="KickbackRight"]
+shape = SubResource("kick")
 
 [node name="OutlaneGateRight" type="StaticBody2D" parent="."]
 collision_layer = 1
 collision_mask = 0
-script = ExtResource("15_ogate")
+script = ExtResource("15_r")
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="OutlaneGateRight"]
 polygon = PackedVector2Array(244, 538, 244, 545, 218, 568, 218, 561)
@@ -199,96 +308,197 @@ polygon = PackedVector2Array(244, 538, 244, 545, 218, 568, 218, 561)
 [node name="OutlaneGateLeft" type="StaticBody2D" parent="."]
 collision_layer = 1
 collision_mask = 0
-script = ExtResource("15_ogate")
+script = ExtResource("15_r")
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="OutlaneGateLeft"]
 polygon = PackedVector2Array(4, 538, 4, 545, 30, 568, 30, 561)
 
-[node name="FlipperLeft" parent="." instance=ExtResource("3_flipper")]
+[node name="LanesLow" type="Node2D" parent="."]
+script = ExtResource("20_r")
+bank_id = &"lanes_low"
+bonus_scrap = 10
+lane_change = true
+toast_text = "KICKBACK LIT"
+
+[node name="Lane1" parent="LanesLow" instance=ExtResource("19_r")]
+position = Vector2(13, 610)
+
+[node name="Lane2" parent="LanesLow" instance=ExtResource("19_r")]
+position = Vector2(50, 619)
+
+[node name="Lane3" parent="LanesLow" instance=ExtResource("19_r")]
+position = Vector2(198, 619)
+
+[node name="Lane4" parent="LanesLow" instance=ExtResource("19_r")]
+position = Vector2(235, 610)
+
+[node name="FlipperLeft" parent="." instance=ExtResource("3_r")]
 position = Vector2(78, 664)
 
-[node name="FlipperRight" parent="." instance=ExtResource("3_flipper")]
+[node name="FlipperRight" parent="." instance=ExtResource("3_r")]
 position = Vector2(170, 664)
 mirrored = true
 action = "flipper_right"
 
-[node name="FlipperUpperLeft" parent="." instance=ExtResource("3_flipper")]
-position = Vector2(70, 246)
-length = 24.0
-kick_base = 470.0
-kick_tip = 680.0
+[node name="FlipperUpperLeft" parent="." instance=ExtResource("3_r")]
+position = Vector2(85, 246)
+length = 32.0
+kick_base = 500.0
+kick_tip = 780.0
 
-[node name="FlipperUpperRight" parent="." instance=ExtResource("3_flipper")]
-position = Vector2(180, 246)
+[node name="FlipperUpperRight" parent="." instance=ExtResource("3_r")]
+position = Vector2(163, 246)
+length = 32.0
+kick_base = 500.0
+kick_tip = 780.0
 mirrored = true
 action = "flipper_right"
-length = 24.0
-kick_base = 470.0
-kick_tip = 680.0
 
 [node name="Bumpers" type="Node2D" parent="."]
 
-[node name="Bumper1" parent="Bumpers" instance=ExtResource("4_bumper")]
+[node name="Bumper1" parent="Bumpers" instance=ExtResource("4_r")]
 position = Vector2(72, 125)
 
-[node name="Bumper2" parent="Bumpers" instance=ExtResource("4_bumper")]
+[node name="Bumper2" parent="Bumpers" instance=ExtResource("4_r")]
 position = Vector2(114, 108)
 
-[node name="Bumper3" parent="Bumpers" instance=ExtResource("4_bumper")]
+[node name="Bumper3" parent="Bumpers" instance=ExtResource("4_r")]
 position = Vector2(98, 162)
 
 [node name="Slingshots" type="Node2D" parent="."]
 
-[node name="SlingshotLeft" parent="Slingshots" instance=ExtResource("5_sling")]
+[node name="SlingshotLeft" parent="Slingshots" instance=ExtResource("5_r")]
 position = Vector2(44, 524)
 normal = Vector2(1, -0.29)
 
-[node name="SlingshotRight" parent="Slingshots" instance=ExtResource("5_sling")]
+[node name="SlingshotRight" parent="Slingshots" instance=ExtResource("5_r")]
 position = Vector2(204, 524)
 scale = Vector2(-1, 1)
 normal = Vector2(-1, -0.29)
 
 [node name="DropBank" type="Node2D" parent="."]
-script = ExtResource("13_bank")
+script = ExtResource("13_r")
 
-[node name="Target1" parent="DropBank" instance=ExtResource("12_dt")]
-position = Vector2(7, 308)
+[node name="Target1" parent="DropBank" instance=ExtResource("12_r")]
+position = Vector2(104, 370)
+rotation = 1.5708
 
-[node name="Target2" parent="DropBank" instance=ExtResource("12_dt")]
-position = Vector2(7, 328)
+[node name="Target2" parent="DropBank" instance=ExtResource("12_r")]
+position = Vector2(124, 370)
+rotation = 1.5708
 
-[node name="Target3" parent="DropBank" instance=ExtResource("12_dt")]
-position = Vector2(7, 348)
+[node name="Target3" parent="DropBank" instance=ExtResource("12_r")]
+position = Vector2(144, 370)
+rotation = 1.5708
+
+[node name="Standups" type="Node2D" parent="."]
+script = ExtResource("20_r")
+bank_id = &"standups"
+bonus_scrap = 8
+
+[node name="Standup1" parent="Standups" instance=ExtResource("18_r")]
+position = Vector2(7, 282)
+
+[node name="Standup2" parent="Standups" instance=ExtResource("18_r")]
+position = Vector2(7, 300)
+
+[node name="Standup3" parent="Standups" instance=ExtResource("18_r")]
+position = Vector2(7, 318)
+
+[node name="LanesTop" type="Node2D" parent="."]
+script = ExtResource("20_r")
+bank_id = &"lanes_top"
+bonus_scrap = 10
+lane_change = true
+toast_text = "SUPER BUMPERS"
+
+[node name="TopLane1" parent="LanesTop" instance=ExtResource("19_r")]
+position = Vector2(196, 104)
+
+[node name="TopLane2" parent="LanesTop" instance=ExtResource("19_r")]
+position = Vector2(218, 104)
+
+[node name="TopLane3" parent="LanesTop" instance=ExtResource("19_r")]
+position = Vector2(240, 104)
 
 [node name="Valves" type="Node2D" parent="."]
 
-[node name="Valve1" parent="Valves" instance=ExtResource("6_valve")]
-position = Vector2(70, 410)
+[node name="Valve1" parent="Valves" instance=ExtResource("6_r")]
+position = Vector2(124, 335)
 
-[node name="Valve2" parent="Valves" instance=ExtResource("6_valve")]
-position = Vector2(214, 440)
+[node name="Valve2" parent="Valves" instance=ExtResource("6_r")]
+position = Vector2(236, 310)
 
-[node name="Valve3" parent="Valves" instance=ExtResource("6_valve")]
-position = Vector2(178, 105)
+[node name="Valve3" parent="Valves" instance=ExtResource("6_r")]
+position = Vector2(150, 112)
 
 [node name="Drones" type="Node2D" parent="."]
 
-[node name="DroneLower" parent="Drones" instance=ExtResource("8_drone")]
-position = Vector2(95, 465)
-patrol_half_width = 28.0
+[node name="DroneLower" parent="Drones" instance=ExtResource("8_r")]
+position = Vector2(124, 452)
+patrol_half_width = 18.0
 
-[node name="DroneUpper" parent="Drones" instance=ExtResource("8_drone")]
+[node name="DroneUpper" parent="Drones" instance=ExtResource("8_r")]
 position = Vector2(135, 75)
 patrol_half_width = 45.0
+
+[node name="Inserts" type="Node2D" parent="."]
+
+[node name="ArrowRampRight" type="Node2D" parent="Inserts"]
+position = Vector2(166, 456)
+script = ExtResource("21_r")
+mode = 0
+rotation = 0.23
+color = Color(0.4, 0.8, 1, 1)
+
+[node name="ArrowRampLeft" type="Node2D" parent="Inserts"]
+position = Vector2(82, 456)
+script = ExtResource("21_r")
+mode = 0
+rotation = -0.23
+color = Color(0.4, 0.8, 1, 1)
+
+[node name="ArrowCentre" type="Node2D" parent="Inserts"]
+position = Vector2(124, 396)
+script = ExtResource("21_r")
+mode = 1
+watch = NodePath("../../Valves/Valve1")
+
+[node name="ArrowValve2" type="Node2D" parent="Inserts"]
+position = Vector2(228, 420)
+script = ExtResource("21_r")
+mode = 1
+watch = NodePath("../../Valves/Valve2")
+
+[node name="ArrowLeftLane" type="Node2D" parent="Inserts"]
+position = Vector2(20, 420)
+script = ExtResource("21_r")
+mode = 0
+color = Color(1, 0.9, 0.3, 1)
+
+[node name="ArrowValve3" type="Node2D" parent="Inserts"]
+position = Vector2(150, 140)
+script = ExtResource("21_r")
+mode = 1
+watch = NodePath("../../Valves/Valve3")
+
+[node name="ArrowLift" type="Node2D" parent="Inserts"]
+position = Vector2(135, 52)
+script = ExtResource("21_r")
+mode = 2
+color = Color(0.4, 1, 0.5, 1)
+
+[node name="Rules" type="Node" parent="."]
+script = ExtResource("23_r")
 
 [node name="Drain" type="Area2D" parent="."]
 position = Vector2(124, 710)
 collision_layer = 0
 collision_mask = 2
-script = ExtResource("7_drain")
+script = ExtResource("7_r")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Drain"]
-shape = SubResource("RectangleShape2D_drain")
+shape = SubResource("drain")
 
 [node name="PlungerSpawn" type="Marker2D" parent="."]
 position = Vector2(257, 708)

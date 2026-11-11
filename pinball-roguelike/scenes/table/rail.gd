@@ -8,13 +8,16 @@
 extends Area2D
 
 @export var points := PackedVector2Array()
-## Pixels per second along the rail.
-@export var speed := 260.0
+## A ball keeps the speed it reached the top with, never less than this.
+@export var min_speed := 220.0
+## Wire rails run downhill, so the ball speeds up along them.
+@export var rail_accel := 250.0
+@export var max_speed := 650.0
 @export var exit_velocity := Vector2(-30, 20)
 @export var scrap := 3
 @export var color := Color(0.75, 0.8, 0.9, 0.8)
 
-## Ball -> distance travelled along the rail.
+## Ball -> [distance travelled, current speed].
 var _riders := {}
 var _length := 0.0
 
@@ -34,11 +37,12 @@ func _on_body_entered(body: Node) -> void:
 func _catch(ball: Ball) -> void:
 	if not is_instance_valid(ball) or _riders.has(ball):
 		return
+	var entry := clampf(ball.linear_velocity.length(), min_speed, max_speed)
 	ball.freeze = true
 	ball.collision_layer = 0
 	ball.collision_mask = 0
 	ball.z_index = 5
-	_riders[ball] = 0.0
+	_riders[ball] = [0.0, entry]
 	Events.scrap_added.emit(scrap)
 
 
@@ -47,11 +51,12 @@ func _physics_process(delta: float) -> void:
 		if not is_instance_valid(ball):
 			_riders.erase(ball)
 			continue
-		var d: float = _riders[ball] + speed * delta
+		var v: float = minf(_riders[ball][1] + rail_accel * delta, max_speed)
+		var d: float = _riders[ball][0] + v * delta
 		if d >= _length:
 			_release(ball)
 			continue
-		_riders[ball] = d
+		_riders[ball] = [d, v]
 		ball.global_position = to_global(_point_at(d))
 
 
