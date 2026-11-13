@@ -96,7 +96,29 @@ object LevelMath {
     fun slopePercent(deg: Double): Double = tan(Math.toRadians(deg)) * 100.0
 
     fun magnitude(gx: Double, gy: Double, gz: Double): Double = sqrt(gx * gx + gy * gy + gz * gz)
+
+    /**
+     * Turns sensor x/y (relative to the display's natural orientation) into screen x/y for the
+     * current display rotation in quarter turns (Surface.ROTATION_0..270 = 0..3). Needed on
+     * foldables such as the OnePlus Open, where the inner screen can be turned against the sensor.
+     */
+    fun remapForDisplay(x: Double, y: Double, quarterTurns: Int): Pair<Double, Double> =
+        when (((quarterTurns % 4) + 4) % 4) {
+            1 -> Pair(-y, x)
+            2 -> Pair(-x, -y)
+            3 -> Pair(y, -x)
+            else -> Pair(x, y)
+        }
 }
+
+/** Averaged raw (uncalibrated) readings from one moment, used for the two-step calibration. */
+data class Sample(
+    val flat: Boolean,
+    val edge: Edge,
+    val edgeTilt: Double,
+    val flatX: Double,
+    val flatY: Double,
+)
 
 /** Per-surface zero offsets, in degrees. Edge offsets are kept separately for each of the four edges. */
 data class Calibration(
@@ -106,6 +128,21 @@ data class Calibration(
 ) {
     fun edge(e: Edge): Double = edges[e] ?: 0.0
     fun isSet(flat: Boolean, e: Edge): Boolean = if (flat) flatX != 0.0 || flatY != 0.0 else edge(e) != 0.0
+
+    /**
+     * Two-step ("reversal") calibration. [first] is taken, the phone is turned 180 degrees on the
+     * same spot, then [second] is taken. Any slope in the surface reverses between the two and
+     * cancels out, leaving only the phone's own error, such as the camera bump lifting one end
+     * when it lies on its back. Returns null if the two readings are not from the same side.
+     */
+    fun fromReversal(first: Sample, second: Sample): Calibration? {
+        if (first.flat != second.flat || first.edge != second.edge) return null
+        return if (first.flat) {
+            copy(flatX = (first.flatX + second.flatX) / 2, flatY = (first.flatY + second.flatY) / 2)
+        } else {
+            copy(edges = edges + (first.edge to (first.edgeTilt + second.edgeTilt) / 2))
+        }
+    }
 }
 
 /**
@@ -158,6 +195,8 @@ class LevelTracker(startEdge: Edge = Edge.BOTTOM, startFlat: Boolean = false) {
     fun zeroHere(cal: Calibration): Calibration =
         if (flat) cal.copy(flatX = rawFlatX, flatY = rawFlatY)
         else cal.copy(edges = cal.edges + (edge to rawEdgeTilt))
+
+    fun sample(): Sample = Sample(flat, edge, rawEdgeTilt, rawFlatX, rawFlatY)
 
     fun resetHere(cal: Calibration): Calibration =
         if (flat) cal.copy(flatX = 0.0, flatY = 0.0)

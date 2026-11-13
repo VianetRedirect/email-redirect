@@ -34,6 +34,8 @@ class LevelView(context: Context) : View(context) {
     private var held = false
     private var buzzOn = true
     private var calibrated = false
+    private var banner: String? = null
+    private var bannerProgress = -1f
 
     /** Drawing rotation, eased towards the target so turning the phone animates smoothly. */
     private var shownRotation = 0f
@@ -94,11 +96,20 @@ class LevelView(context: Context) : View(context) {
         }
     }
 
-    fun show(r: Reading, held: Boolean, buzzOn: Boolean, calibrated: Boolean) {
+    /**
+     * [banner] is a message that stays up until cleared (calibration steps, fold warning).
+     * [bannerProgress] 0..1 draws a progress bar under it; negative hides the bar.
+     */
+    fun show(
+        r: Reading, held: Boolean, buzzOn: Boolean, calibrated: Boolean,
+        banner: String? = null, bannerProgress: Float = -1f,
+    ) {
         reading = r
         this.held = held
         this.buzzOn = buzzOn
         this.calibrated = calibrated
+        this.banner = banner
+        this.bannerProgress = bannerProgress
         invalidate()
     }
 
@@ -202,8 +213,9 @@ class LevelView(context: Context) : View(context) {
         val tube = RectF(cx - tubeW / 2, ty - tubeH / 2, cx + tubeW / 2, ty + tubeH / 2)
         drawTube(c, tube, tilt, colour)
 
-        // Says which end to lower.
-        text.textSize = max(dp(14f), unit * 0.04f)
+        // Says which end to lower. Hidden while a banner needs the space.
+        if (banner != null) return
+        text.textSize = (unit * 0.04f).coerceIn(dp(14f), dp(20f))
         text.color = cDim
         val hint = when {
             abs(tilt) < LevelMath.LEVEL_DEG -> "level"
@@ -339,7 +351,11 @@ class LevelView(context: Context) : View(context) {
     private fun drawHeader(c: Canvas, w: Float, pad: Float, label: String) {
         text.textSize = dp(15f)
         text.color = if (held) cNear else cDim
-        val extra = if (calibrated) "  ·  ZEROED" else ""
+        val extra = when {
+            calibrated -> "  ·  CALIBRATED"
+            reading.flat -> "  ·  NOT CALIBRATED"
+            else -> ""
+        }
         c.drawText(label + extra, w / 2, pad + text.textSize, text)
     }
 
@@ -359,7 +375,7 @@ class LevelView(context: Context) : View(context) {
     private fun drawButtons(c: Canvas, w: Float, h: Float, pad: Float) {
         val labels = linkedMapOf(
             Button.HOLD to if (held) "RELEASE" else "HOLD",
-            Button.ZERO to "ZERO",
+            Button.ZERO to "CALIBRATE",
             Button.SOUND to if (buzzOn) "BUZZ ON" else "BUZZ OFF",
         )
         val gap = dp(10f)
@@ -385,19 +401,37 @@ class LevelView(context: Context) : View(context) {
         }
         text.textSize = dp(11f)
         text.color = cDim
-        c.drawText("Hold ZERO to clear this side's zero", w / 2, y - dp(10f), text)
+        c.drawText("Hold CALIBRATE to clear this side's calibration", w / 2, y - dp(10f), text)
     }
 
     private fun drawToast(c: Canvas, w: Float, h: Float, pad: Float, now: Long) {
-        val msg = toastText ?: return
-        if (now >= toastUntil) { toastText = null; return }
+        val msg = banner ?: toastText?.takeIf { now < toastUntil } ?: run { toastText = null; return }
+        val lines = msg.split('\n')
         text.textSize = dp(15f)
-        val tw = text.measureText(msg) + dp(32f)
-        val y = h - pad - buttonH - dp(56f)
-        val r = RectF(w / 2 - tw / 2, y - dp(22f), w / 2 + tw / 2, y + dp(14f))
-        fill.color = Color.parseColor("#E6263139")
+        val lineH = text.textSize * 1.35f
+        val maxW = w - 2 * pad
+        val tw = min(maxW, (lines.maxOf { text.measureText(it) }) + dp(36f))
+        val bottom = h - pad - buttonH - dp(40f)
+        val barH = if (banner != null && bannerProgress >= 0f) dp(14f) else 0f
+        val boxH = lines.size * lineH + dp(20f) + barH
+        val r = RectF(w / 2 - tw / 2, bottom - boxH, w / 2 + tw / 2, bottom)
+        fill.color = if (banner != null) Color.parseColor("#F2263A4A") else Color.parseColor("#E6263139")
         c.drawRoundRect(r, dp(18f), dp(18f), fill)
+        if (banner != null) {
+            stroke.color = cNear
+            stroke.strokeWidth = dp(1.5f)
+            c.drawRoundRect(r, dp(18f), dp(18f), stroke)
+        }
         text.color = cText
-        c.drawText(msg, w / 2, y + dp(1f), text)
+        lines.forEachIndexed { i, line ->
+            c.drawText(line, w / 2, r.top + dp(10f) + lineH * (i + 1) - lineH * 0.3f, text)
+        }
+        if (barH > 0f) {
+            val bar = RectF(r.left + dp(18f), r.bottom - dp(16f), r.right - dp(18f), r.bottom - dp(11f))
+            fill.color = cLine
+            c.drawRoundRect(bar, dp(3f), dp(3f), fill)
+            fill.color = cNear
+            c.drawRoundRect(RectF(bar.left, bar.top, bar.left + bar.width() * bannerProgress.coerceIn(0f, 1f), bar.bottom), dp(3f), dp(3f), fill)
+        }
     }
 }

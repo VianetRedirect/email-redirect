@@ -113,4 +113,56 @@ class LevelMathTest {
         assertEquals(-170.0, LevelMath.wrap(190.0), 1e-9)
         assertEquals(10.0, LevelMath.wrap(370.0), 1e-9)
     }
+
+    /** Reading for a phone lying on its back, with its own tilt [bx],[by] on a surface tilted [sx],[sy]. */
+    private fun lying(bx: Double, by: Double, sx: Double, sy: Double): Triple<Double, Double, Double> {
+        val tx = rad(bx + sx)
+        val ty = rad(by + sy)
+        val gx = g * sin(tx)
+        val gy = g * sin(ty)
+        return Triple(gx, gy, kotlin.math.sqrt(g * g - gx * gx - gy * gy))
+    }
+
+    @Test fun reversalCancelsSurfaceAndKeepsCameraBump() {
+        // Camera bump lifts the top end by 1.4 degrees and one side by 0.3; the table slopes too.
+        val bumpX = 0.3; val bumpY = 1.4
+        val t = LevelTracker()
+        t.feed(lying(bumpX, bumpY, 0.8, -0.5))
+        val first = t.sample()
+        // Turned 180 degrees on the same spot: the table's slope reverses, the bump does not.
+        t.feed(lying(bumpX, bumpY, -0.8, 0.5))
+        val second = t.sample()
+        val cal = none.fromReversal(first, second)!!
+        // On a truly level surface it now reads level despite the bump.
+        val r = t.feed(lying(bumpX, bumpY, 0.0, 0.0), cal)
+        assertEquals(0.0, r.tiltX, 0.01)
+        assertEquals(0.0, r.tiltY, 0.01)
+        // And on the sloping table it reads the table's slope.
+        val s = t.feed(lying(bumpX, bumpY, 0.8, -0.5), cal)
+        assertEquals(0.8, s.tiltX, 0.02)
+        assertEquals(-0.5, s.tiltY, 0.02)
+    }
+
+    @Test fun reversalOnAnEdge() {
+        val t = LevelTracker()
+        t.feed(upright(0.25 + 1.0)); val a = t.sample()   // phone error 0.25, surface +1.0
+        t.feed(upright(0.25 - 1.0)); val b = t.sample()   // turned round: surface reads -1.0
+        val cal = none.fromReversal(a, b)!!
+        assertEquals(0.25, cal.edge(Edge.BOTTOM), 1e-9)
+        assertEquals(0.0, t.feed(upright(0.25), cal).tilt, 1e-9)
+    }
+
+    @Test fun reversalRejectsDifferentSides() {
+        val t = LevelTracker()
+        t.feed(upright(0.0)); val a = t.sample()
+        t.feed(Triple(0.0, 0.0, g)); val b = t.sample()
+        assertEquals(null, none.fromReversal(a, b))
+    }
+
+    @Test fun displayRemap() {
+        assertEquals(Pair(1.0, 2.0), LevelMath.remapForDisplay(1.0, 2.0, 0))
+        assertEquals(Pair(-2.0, 1.0), LevelMath.remapForDisplay(1.0, 2.0, 1))
+        assertEquals(Pair(-1.0, -2.0), LevelMath.remapForDisplay(1.0, 2.0, 2))
+        assertEquals(Pair(2.0, -1.0), LevelMath.remapForDisplay(1.0, 2.0, 3))
+    }
 }
